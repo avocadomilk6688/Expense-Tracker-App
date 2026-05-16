@@ -25,7 +25,9 @@
         </div>
         <div class="edit-form-container">
             <div class="flex-col edit-amount">
-                <label for="editAmount">Amount</label>
+               <!--- <label for="editAmount">Amount</label>-->
+               <!-- ADD this line after the Amount label in the edit form -->
+                <label for="editAmount">Amount <span id="editCurrencyLabel" style="font-size:0.85rem; color:#614a4a;"></span></label>
                 <input type="number" min="0" name="amount" id="editAmount">
             </div>
             <div class="exp-for-edit flex-col">
@@ -43,13 +45,15 @@
     <button class="mobile-add-btn"><i class="fa-solid fa-plus"></i></button>
     <div class="main">
         <div class="greeting">
-            <p>Hi <h1>User,</h1>
-            </p>
+            <p>Hi <span style="font-size:1.8rem; font-weight:600;">User,</span></p>
+            <div class="currency-switcher">
+                <select id="displayCurrencySelect"></select>
+            </div>
         </div>
 
         <!---------------------------- left section strats here  -------------------------->
+        <div class="content-row">
         <div class="left-container">
-
 
             <div class="display-cards">
 
@@ -72,6 +76,9 @@
                         <p>Total Budget</p>
                         <div>
                             <h4>₹<span id="totalBudget">0</span></h4>
+                            <button id="editBudgetBtn" title="Change Budget">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -98,7 +105,25 @@
                     <div class="flex-col add-amount">
                         <label for="addAmount">Amount</label>
                         <input type="number" min="0" name="amount" id="addAmount">
+                </select>
                     </div>
+
+                    <!-- Currency selector -->
+                <div class="flex-col">
+                    <label for="currencySelect">Currency</label>
+                    <select id="currencySelect"></select>   <!-- populated by initCurrencySelect() -->
+                </div>
+                
+                <div id="recurringRow" class="recurring-row">
+                 <label class="recurring-toggle">
+                    <input type="checkbox" id="isRecurring"> Recurring
+                 </label>
+                 <select id="recurringFreq" style="display:none">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                 </select>
+                </div>
 
                     <div class="exp-for">
                         <div class="tags-conatiner">
@@ -141,7 +166,17 @@
         <div class="right-container">
             <div class="history-text">
                 <h1>History</h1>
+                <button id="recTabBtn" class="rec-tab-btn">
+                    🔁 Recurring <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="recurring-list"></div>
                 <select name="sortTrans" id="sortTrans">
+                    <option value="default">Default</option>
+                    <option value="highToLow">High to Low</option>
+                    <option value="lowToHigh">Low to High</option>
+                </select>
+
+                <select name="sortRecurring" id="sortRecurring" style="display:none">
                     <option value="default">Default</option>
                     <option value="highToLow">High to Low</option>
                     <option value="lowToHigh">Low to High</option>
@@ -166,7 +201,7 @@
   </div> -->
 
             </div>
-        </div>
+        </div>                         
     </div>
 
 

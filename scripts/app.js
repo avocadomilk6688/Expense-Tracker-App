@@ -1,7 +1,22 @@
 import localStorage from "./localStorage.js";
+import {
+  toBaseINR,
+  fromBaseINR,          // ← ADD THIS
+  SUPPORTED_CURRENCIES,
+  BASE_CURRENCY,
+  formatWithOriginal,
+} from "./currencyService.js";
+import {
+  processDue,
+  getAllRecurring,
+  saveRecurring,
+  deleteRecurring,
+  createRecurringItemHTML,
+} from "./recurringEngine.js";
 
-// ---------------------------all data here ------------------------
-
+// ─────────────────────────────────────────────────────────────
+// COLORS
+// ─────────────────────────────────────────────────────────────
 const colors = {
   red: "#F38181",
   green: "#297054b0",
@@ -11,98 +26,211 @@ const colors = {
 };
 
 let totalExpData, totalBudgetLeftData;
+let currentTab = "expense";   
 
-// ---------------------------------refrense of html element here---------------------------
-const ctx = document.getElementById("myChart");
-const budgetLeftEle = document.getElementById("budgetLeft");
-const totalBudgetEle = document.getElementById("totalBudget");
-const totalExpEle = document.getElementById("totalExp");
-const addExpBtnEle = document.querySelector(".add-exp-btn");
-const addBudBtnEle = document.querySelector(".add-bud-btn");
-const expForSelectEle = document.querySelector(".exp-for");
-const tagContainer = document.querySelector(".tags-conatiner");
-let allOptionLabel = document.querySelectorAll(".tags-conatiner label");
-const addBtnEle = document.getElementById("addBtn");
-const clearBtnEle = document.getElementById("clearBtn");
-const transAmountEle = document.getElementById("addAmount");
-const expForEle = document.querySelectorAll('[name="expFor"]');
-const transHistoryParentEle = document.querySelector(
-  ".money-history-container"
-);
+// ─────────────────────────────────────────────────────────────
+// ELEMENT REFERENCES
+// ─────────────────────────────────────────────────────────────
+const ctx                    = document.getElementById("myChart");
+const budgetLeftEle          = document.getElementById("budgetLeft");
+const totalBudgetEle         = document.getElementById("totalBudget");
+const totalExpEle            = document.getElementById("totalExp");
+const addExpBtnEle           = document.querySelector(".add-exp-btn");
+const addBudBtnEle           = document.querySelector(".add-bud-btn");
+const expForSelectEle        = document.querySelector(".exp-for");
+const tagContainer           = document.querySelector(".tags-conatiner");
+let allOptionLabel           = document.querySelectorAll(".tags-conatiner label");
+const addBtnEle              = document.getElementById("addBtn");
+const clearBtnEle            = document.getElementById("clearBtn");
+const transAmountEle         = document.getElementById("addAmount");
+const expForEle              = document.querySelectorAll('[name="expFor"]');
+const transHistoryParentEle  = document.querySelector(".money-history-container");
 const mobileAddScreenShowBtn = document.querySelector(".mobile-add-btn");
-const moneyAddCardEle = document.querySelector(".add-money-card");
-const addNewTagBtnEle = document.getElementById("addTagBtn");
-const confirmTagBtnEle = document.getElementById("confirmNewTag");
-const tagInputEle = document.querySelector(".tag-input");
-const tagInputField = document.getElementById("tagInputField");
-const sortTransSelectEle = document.getElementById("sortTrans");
-const editCardEle = document.querySelector(".edit-money-card");
-const editAmountEle = document.getElementById("editAmount");
-const editTagEle = document.getElementById("tagName");
-const editTranBtn = document.getElementById("editTranBtn");
-const closeEditCardBtn = document.getElementById("closeEdit");
-const addAmountCardInfo = document.querySelector(".add-money-card .info");
-const editCardInfo = document.querySelector(".edit-money-card .info");
+const moneyAddCardEle        = document.querySelector(".add-money-card");
+const addNewTagBtnEle        = document.getElementById("addTagBtn");
+const confirmTagBtnEle       = document.getElementById("confirmNewTag");
+const tagInputEle            = document.querySelector(".tag-input");
+const tagInputField          = document.getElementById("tagInputField");
+const sortTransSelectEle     = document.getElementById("sortTrans");
+const editCardEle            = document.querySelector(".edit-money-card");
+const editAmountEle          = document.getElementById("editAmount");
+const editTagEle             = document.getElementById("tagName");
+const editTranBtn            = document.getElementById("editTranBtn");
+const closeEditCardBtn       = document.getElementById("closeEdit");
+const addAmountCardInfo      = document.querySelector(".add-money-card .info");
+const editCardInfo           = document.querySelector(".edit-money-card .info");
+const editBudgetBtn          = document.getElementById("editBudgetBtn");
+const sortRecurringEle       = document.getElementById("sortRecurring");
+const currencySelectEle      = document.getElementById("currencySelect"); 
+const recurringRowEle        = document.getElementById("recurringRow");   
+const isRecurringCheckbox    = document.getElementById("isRecurring");
+const recurringFreqEle       = document.getElementById("recurringFreq");
+const recurringListEle       = document.querySelector(".recurring-list");
+const recTabBtnEle           = document.getElementById("recTabBtn");
 
-// -----------------------------code logic here --------------------------------
-
-function totalCalculate() {
-  const allTrans = localStorage.getAllTrans();
-  let total = 0;
-  for (let i = 0; i < allTrans.length; i++) {
-    total += allTrans[i].amount;
-  }
-  totalExpEle.textContent = `${total}`;
-  const leftBudget = Number(localStorage.getTotalBudget()) - total;
-  totalExpData = total;
-  totalBudgetLeftData = leftBudget;
-  budgetLeftEle.textContent = `${leftBudget}`;
-  totalBudgetEle.textContent = localStorage.getTotalBudget();
-}
-
-totalCalculate();
-
+// ─────────────────────────────────────────────────────────────
+// INFO MESSAGES
+// ─────────────────────────────────────────────────────────────
 function showInfo(ele, txt = "") {
   ele.parentElement.style.display = "flex";
   ele.textContent = txt;
 }
+
 function hideInfo(ele) {
   ele.textContent = "";
   ele.parentElement.style.display = "none";
 }
 
-function addBudgetInput() {
-  if (transAmountEle.value == "") {
-    showInfo(addAmountCardInfo, "Please enter budget amount.");
-  } else {
-    localStorage.setTotalBudget(Number(transAmountEle.value));
-    totalCalculate();
-    hideInfo(addAmountCardInfo);
+// ─────────────────────────────────────────────────────────────
+// BUDGET CALCULATIONS
+// ─────────────────────────────────────────────────────────────
+
+async function totalCalculate() {
+  const allTrans = localStorage.getAllTrans();
+  const displayCurrency = localStorage.getDisplayCurrency();
+  const sym = SUPPORTED_CURRENCIES.find(c => c.code === displayCurrency)?.symbol ?? "₹";
+
+  let total = 0;
+  for (let i = 0; i < allTrans.length; i++) {
+    total += allTrans[i].amount; 
   }
+
+  const budget     = Number(localStorage.getTotalBudget());
+  const leftBudget = budget - total;
+  totalExpData         = total;
+  totalBudgetLeftData  = leftBudget;
+
+  // Convert to display currency
+  const [dispTotal, dispBudget, dispLeft] = await Promise.all([
+    fromBaseINR(total, displayCurrency),
+    fromBaseINR(budget, displayCurrency),
+    fromBaseINR(leftBudget, displayCurrency),
+  ]);
+
+  totalExpEle.textContent    = `${Math.round(dispTotal)}`;
+  budgetLeftEle.textContent  = `${Math.round(dispLeft)}`;
+  totalBudgetEle.textContent = `${Math.round(dispBudget)}`;
+
+  // Update the ₹ symbol in the HTML to match display currency
+  document.querySelectorAll(".money-left-card h1, .total-card h4").forEach(el => {
+  });
+  swapCurrencySymbols(sym);
 }
 
+function swapCurrencySymbols(sym) {
+  // Replace the hardcoded ₹ before each span
+  ["budgetLeft","totalBudget","totalExp"].forEach(id => {
+    const span = document.getElementById(id);
+    if (span?.previousSibling?.nodeType === 3) {
+      span.previousSibling.textContent = sym;
+    }
+  });
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// BUDGET INPUT (async — reads from shared currencySelectEle)
+// ─────────────────────────────────────────────────────────────
+async function addBudgetInput() {
+  const amount   = transAmountEle.value;
+  const currency = currencySelectEle?.value ?? BASE_CURRENCY;
+
+  if (amount == "") {
+    showInfo(addAmountCardInfo, "Please enter budget amount.");
+    return;
+  }
+
+  const baseAmount = await toBaseINR(Number(amount), currency);
+  localStorage.setTotalBudget(Math.round(baseAmount));   
+  localStorage.setBudgetMeta(currency, Number(amount)); 
+  totalCalculate();
+  hideInfo(addAmountCardInfo);
+}
+
+// ─────────────────────────────────────────────────────────────
+// TAB SWITCHING — expense vs budget
+// ─────────────────────────────────────────────────────────────
 const showBudgetInput = () => {
+  currentTab = "budget";                             
   addExpBtnEle.classList.remove("selected-add-exp");
   addBudBtnEle.classList.add("selected-add-bud");
+
   expForSelectEle.style.display = "none";
-  transAmountEle.value = localStorage.getTotalBudget();
+  if (recurringRowEle) recurringRowEle.style.display = "none";
+
+  // Restore the original amount + currency that was last saved
+  const { currency, originalAmount } = localStorage.getBudgetMeta();
+  transAmountEle.value = originalAmount || localStorage.getTotalBudget();
+  if (currencySelectEle) currencySelectEle.value = currency ?? BASE_CURRENCY;
+  addBtnEle.innerHTML = `Save <i class="fa-solid fa-check"></i>`;  
   addBtnEle.removeEventListener("click", addTransItem);
-  addBtnEle.addEventListener("click", addBudgetInput);
+  addBtnEle.addEventListener("click", addBudgetInput);   
 };
 
 const showExpInput = () => {
+  currentTab = "expense";                             
   addBudBtnEle.classList.remove("selected-add-bud");
   addExpBtnEle.classList.add("selected-add-exp");
+
+  // Restore expense-only fields
   expForSelectEle.style.display = "flex";
+  if (recurringRowEle) recurringRowEle.style.display = "flex";
+
   transAmountEle.value = "";
+  if (currencySelectEle) currencySelectEle.value = BASE_CURRENCY; 
+
+  addBtnEle.innerHTML = `Add <i class="fa-solid fa-plus"></i>`;    
   addBtnEle.removeEventListener("click", addBudgetInput);
-  addBtnEle.addEventListener("click", addTransItem);
+  addBtnEle.addEventListener("click", addTransItem);    
 };
 
-function createTranHTML(obj = {}) {
+// ─────────────────────────────────────────────────────────────
+// TRANSACTION HTML
+// ─────────────────────────────────────────────────────────────
+/*function createTranHTML(obj = {}) {
+  const amountDisplay =
+    obj.currency && obj.currency !== BASE_CURRENCY && obj.originalAmount
+      ? formatWithOriginal(obj.amount, obj.originalAmount, obj.currency)
+      : `₹${obj.amount}`;
+
   return `<div class="trans-item" id="${obj?.id}">
   <div>
-      <h4>-₹${obj?.amount}</h4>
+      <h4 class="trans-amount">-${amountDisplay}</h4>
+      <div class="tranTagContainer">
+        <p>${obj?.tag}</p>
+        <p class="trans-date">${new Date(obj?.time).toLocaleString()}</p>
+      </div>
+  </div>
+  <p class="trans-date">${new Date(obj?.time).toLocaleString()}</p>
+  <div class="trans-item-btn">
+      <button id="transEdit"><i class="fa-regular fa-pen-to-square"></i></button>
+      <button id="transDelete"><i class="fa-regular fa-trash-can"></i></button>
+  </div>
+  </div>`;
+} */
+
+function createTranHTML(obj = {}) {
+  const displayCurrency = localStorage.getDisplayCurrency();
+  const sym = SUPPORTED_CURRENCIES.find(c => c.code === displayCurrency)?.symbol ?? "₹";
+  const domId = `tran-amount-${obj.id}`;
+
+  const hasBracket = obj.currency && obj.currency !== displayCurrency && obj.originalAmount;
+  const origSym = hasBracket
+    ? (SUPPORTED_CURRENCIES.find(c => c.code === obj.currency)?.symbol ?? obj.currency)
+    : "";
+  const bracketHtml = hasBracket
+    ? ` <span class="approx-inr">(${origSym}${obj.originalAmount})</span>`
+    : "";
+
+  fromBaseINR(obj.amount, displayCurrency).then(converted => {
+    const el = document.getElementById(domId);
+    /*if (el) el.textContent = `-${sym}${Math.round(converted)}`;       */
+    if (el) el.innerHTML = `-${sym}${Math.round(converted)}${bracketHtml}`;
+  });
+
+  return `<div class="trans-item" id="${obj?.id}">
+  <div>
+      <h4 class="trans-amount" id="${domId}">-${sym}...</h4>
       <div class="tranTagContainer">
         <p>${obj?.tag}</p>
         <p class="trans-date">${new Date(obj?.time).toLocaleString()}</p>
@@ -116,6 +244,9 @@ function createTranHTML(obj = {}) {
   </div>`;
 }
 
+// ─────────────────────────────────────────────────────────────
+// TAGS
+// ─────────────────────────────────────────────────────────────
 localStorage.saveTag("Manik👨‍💻");
 
 function createTagHTML(str) {
@@ -126,21 +257,19 @@ function createTagHTML(str) {
 }
 
 function renderTags() {
-  tagContainer.innerHTML = ``;
+  tagContainer.innerHTML = "";
   const tagArray = localStorage.getAllTags();
-  if (tagArray == []) {
-    return;
-  } else {
-    tagArray.forEach((tag) => {
-      const tagEle = createTagHTML(tag);
-      tagContainer.insertAdjacentHTML("afterbegin", tagEle);
-    });
-  }
+  if (tagArray == []) return;
+
+  tagArray.forEach((tag) => {
+    tagContainer.insertAdjacentHTML("afterbegin", createTagHTML(tag));
+  });
+
   allOptionLabel = document.querySelectorAll(".exp-for label");
   allOptionLabel.forEach((label) => {
     label.addEventListener("click", () => {
-      allOptionLabel.forEach((label) => {
-        label.style.backgroundColor = colors.lightBlue;
+      allOptionLabel.forEach((l) => {
+        l.style.backgroundColor = colors.lightBlue;
       });
       label.style.backgroundColor = colors.yellow;
     });
@@ -159,20 +288,23 @@ function addNewTag() {
   tagInputEle.classList.remove("show");
 }
 
+// ─────────────────────────────────────────────────────────────
+// TRANSACTION HISTORY RENDER
+// ─────────────────────────────────────────────────────────────
 function renderTransHistory(transArr = []) {
   transHistoryParentEle.innerHTML = "";
-  if (transArr == []) {
-    return;
-  } else {
-    transArr.forEach((transObj) => {
-      const transEle = createTranHTML(transObj);
-      transHistoryParentEle.insertAdjacentHTML("beforeend", transEle);
-    });
-  }
+  if (transArr == []) return;
+
+  transArr.forEach((transObj) => {
+    transHistoryParentEle.insertAdjacentHTML("beforeend", createTranHTML(transObj));
+  });
 }
 
 renderTransHistory(localStorage.getAllTrans());
 
+// ─────────────────────────────────────────────────────────────
+// CHART
+// ─────────────────────────────────────────────────────────────
 function showChart(arr = []) {
   new Chart(ctx, {
     type: "pie",
@@ -188,59 +320,107 @@ function showChart(arr = []) {
     },
     options: {
       plugins: {
-        legend: {
-          display: false,
-        },
+        legend: { display: false },
       },
     },
   });
 }
 
-function findChekedTag(arr) {
+// ─────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────
+function findCheckedTag(arr) {
   let checkedTag = undefined;
   arr.forEach((tag) => {
-    if (tag.checked) {
-      checkedTag = tag;
-    }
+    if (tag.checked) checkedTag = tag;
   });
-
   return checkedTag;
 }
 
-function addTransItem() {
-  const amountEle = document.getElementById("addAmount");
-  const checkedTag = findChekedTag(
-    Array.from(document.querySelectorAll('[name="expFor"]'))
-  );
-  const amount = amountEle.value;
-  const checkedTagValue = checkedTag ? checkedTag.value : undefined;
-
-  if (amount && checkedTagValue && Number(amount) > 0) {
-    let transObj = {
-      id: Math.floor(Math.random() * 10000000),
-      amount: Number(amount),
-      tag: checkedTagValue,
-      time: new Date().toISOString(),
-    };
-    localStorage.saveTrans(transObj);
-    renderTransHistory(localStorage.getAllTrans());
-    addTranBtnEvent();
-    totalCalculate();
-    hideInfo(addAmountCardInfo);
-  } else {
-    if (amount == "" || Number(amount) <= 0) {
-      showInfo(addAmountCardInfo, "Please enter proper amount.");
-    } else if (checkedTagValue == undefined) {
-      showInfo(addAmountCardInfo, "Please select a tag.");
-    }
-  }
-
-  amountEle.value = "";
+function clearCheckedTag(checkedTag) {
+  if (!checkedTag) return;
   checkedTag.checked = false;
-  const checkedLabel = document.querySelector(`[for="${checkedTag.id}"]`);
-  checkedLabel.style.backgroundColor = colors.lightBlue;
+  const label = document.querySelector(`[for="${checkedTag.id}"]`);
+  if (label) label.style.backgroundColor = colors.lightBlue;
 }
 
+// ─────────────────────────────────────────────────────────────
+// ADD TRANSACTION (async — multicurrency + recurring)
+// ─────────────────────────────────────────────────────────────
+async function addTransItem() {
+  const amountEle       = document.getElementById("addAmount");
+  const checkedTag      = findCheckedTag(Array.from(document.querySelectorAll('[name="expFor"]')));
+  const amount          = amountEle.value;
+  const currency        = currencySelectEle?.value ?? BASE_CURRENCY;
+  const checkedTagValue = checkedTag ? checkedTag.value : undefined;
+
+  // Validation
+  if (!amount || Number(amount) <= 0) {
+    showInfo(addAmountCardInfo, "Please enter proper amount.");
+    return;
+  }
+  if (!checkedTagValue) {
+    showInfo(addAmountCardInfo, "Please select a tag.");
+    return;
+  }
+
+  const baseAmount = await toBaseINR(Number(amount), currency);
+
+  if (isRecurringCheckbox?.checked) {
+    // ── Save as a recurring template ──────────────────────────
+    const rec = {
+      id: Math.floor(Math.random() * 10_000_000),
+      amount: Number(amount),
+      currency,
+      tag: checkedTagValue,
+      frequency: recurringFreqEle?.value ?? "monthly",
+      lastRun: null,
+    };
+    saveRecurring(rec);
+    renderRecurringList();
+
+    // Fire first occurrence right now
+    localStorage.saveTrans({
+      id: Math.floor(Math.random() * 10_000_000),
+      amount: Math.round(baseAmount),
+      originalAmount: Number(amount),
+      currency,
+      tag: `🔁 ${checkedTagValue}`,
+      time: new Date().toISOString(),
+    });
+
+    // Mark lastRun so engine doesn't double-fire on next app load
+    rec.lastRun = new Date().toISOString();
+    saveRecurring(rec);
+
+    showInfo(addAmountCardInfo, `✅ Recurring (${rec.frequency}) saved & first charge added.`);
+  } else {
+    // ── One-time transaction ──────────────────────────────────
+    localStorage.saveTrans({
+      id: Math.floor(Math.random() * 10_000_000),
+      amount: Math.round(baseAmount),
+      originalAmount: Number(amount),
+      currency,
+      tag: checkedTagValue,
+      time: new Date().toISOString(),
+    });
+    hideInfo(addAmountCardInfo);
+  }
+
+  renderTransHistory(localStorage.getAllTrans());
+  addTranBtnEvent();
+  totalCalculate();
+
+  // Reset form
+  amountEle.value = "";
+  clearCheckedTag(checkedTag);
+  if (isRecurringCheckbox) isRecurringCheckbox.checked = false;
+  if (recurringFreqEle)    recurringFreqEle.style.display = "none";
+}
+
+// ─────────────────────────────────────────────────────────────
+// CLEAR FORM
+// ─────────────────────────────────────────────────────────────
 function clearInputForm() {
   transAmountEle.value = "";
   Array.from(document.querySelectorAll('[name="expFor"]')).forEach((input) => {
@@ -249,11 +429,17 @@ function clearInputForm() {
   document.querySelectorAll(".tags-conatiner label").forEach((label) => {
     label.style.backgroundColor = `${colors.lightBlue}`;
   });
+  if (isRecurringCheckbox) isRecurringCheckbox.checked = false;
+  if (recurringFreqEle)    recurringFreqEle.style.display = "none";
   hideInfo(addAmountCardInfo);
 }
 
+// ─────────────────────────────────────────────────────────────
+// TRANSACTION BUTTON EVENTS (edit / delete)
+// ─────────────────────────────────────────────────────────────
 function addTranBtnEvent() {
   document.querySelectorAll(".trans-item").forEach((item) => {
+    // Delete button
     item.lastElementChild.lastElementChild.addEventListener("click", () => {
       const sure = window.confirm("Are you really wanna delete this?");
       if (sure) {
@@ -263,36 +449,58 @@ function addTranBtnEvent() {
         totalCalculate();
       }
     });
+
+    // Edit button
     item.lastElementChild.firstElementChild.addEventListener("click", () => {
       const tranObj = localStorage.findTran(item.id);
-      editAmountEle.value = "";
-      editTagEle.value = "";
+      /*const displayCurrency = localStorage.getDisplayCurrency();*/
       editCardEle.style.display = "flex";
-      editAmountEle.value = tranObj?.amount;
-      editTagEle.value = tranObj?.tag;
-      editCardEle.id = tranObj?.id;
+      editTagEle.value          = tranObj?.tag;
+      editCardEle.id            = tranObj?.id;
+      /*fromBaseINR(tranObj.amount, displayCurrency).then(converted => {
+      editAmountEle.value = Math.round(converted);    */
+      editAmountEle.value = tranObj?.originalAmount ?? tranObj?.amount;
+      editCardEle.dataset.currency = tranObj?.currency ?? BASE_CURRENCY;
+      const sym = SUPPORTED_CURRENCIES.find(c => c.code === (tranObj?.currency ?? BASE_CURRENCY))?.symbol ?? "";
+      const label = document.getElementById("editCurrencyLabel");
+      if (label) label.textContent = `(${sym} ${tranObj?.currency ?? BASE_CURRENCY})`;
     });
   });
 }
 
-function editTran() {
+// ─────────────────────────────────────────────────────────────
+// EDIT TRANSACTION
+// ─────────────────────────────────────────────────────────────
+async function editTran() {
   if (
     editAmountEle.value != "" &&
     Number(editAmountEle.value) > 0 &&
     editTagEle.value != ""
   ) {
+    /*const displayCurrency = localStorage.getDisplayCurrency();
+    const baseAmount = await toBaseINR(Number(editAmountEle.value), displayCurrency);*/
+    const editCurrency = editCardEle.dataset.currency ?? BASE_CURRENCY;
+    const baseAmount = await toBaseINR(Number(editAmountEle.value), editCurrency);
     const transObj = {
       id: Number(editCardEle.id),
-      amount: Number(editAmountEle.value),
+      amount: Math.round(baseAmount),
+      originalAmount: Number(editAmountEle.value),
+      currency: editCurrency,      
       tag: editTagEle.value,
     };
     localStorage.saveTrans(transObj);
-    renderTransHistory(localStorage.getAllTrans());
-    addTranBtnEvent();
-    totalCalculate();
-    editAmountEle.value = "";
-    editTagEle.value = "";
-    hideInfo(editCardInfo);
+    const isRecurringFilter = transHistoryParentEle.dataset.filter === "recurring";
+    if (isRecurringFilter) {
+      const recurringOnly = localStorage.getAllTrans().filter(t => t.tag?.startsWith("🔁"));
+      renderTransHistory(recurringOnly);
+    } else {
+      renderTransHistory(localStorage.getAllTrans());
+  }
+  addTranBtnEvent();
+  totalCalculate();
+  editAmountEle.value = "";
+  editTagEle.value    = "";
+  hideInfo(editCardInfo);
   } else {
     showInfo(editCardInfo, "Please enter proper value.");
   }
@@ -300,31 +508,15 @@ function editTran() {
   editCardEle.style.display = "none";
 }
 
+// ─────────────────────────────────────────────────────────────
+// SORT TRANSACTIONS
+// ─────────────────────────────────────────────────────────────
 const sortTransHelper = (arr = [], sortTypeNum) => {
-  let sortedArray;
-  if (sortTypeNum == 1) {
-    sortedArray = arr.sort((trans1, trans2) => {
-      if (trans1?.amount > trans2?.amount) {
-        return -1;
-      } else if (trans1?.amount < trans2?.amount) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
-  } else if (sortTypeNum == -1) {
-    sortedArray = arr.sort((trans1, trans2) => {
-      if (trans1?.amount > trans2?.amount) {
-        return 1;
-      } else if (trans1?.amount < trans2?.amount) {
-        return -1;
-      } else {
-        return 0;
-      }
-    });
-  }
-
-  return sortedArray;
+  return arr.sort((a, b) => {
+    if (a.amount > b.amount) return sortTypeNum === 1 ? -1 : 1;
+    if (a.amount < b.amount) return sortTypeNum === 1 ? 1 : -1;
+    return 0;
+  });
 };
 
 function sortTrans(e) {
@@ -345,19 +537,76 @@ function sortTrans(e) {
   }
 }
 
-mobileAddScreenShowBtn.addEventListener("click", (e) => {
+// ─────────────────────────────────────────────────────────────
+// CURRENCY SELECT — one dropdown, shared by both tabs
+// ─────────────────────────────────────────────────────────────
+function initCurrencySelect() {
+  if (!currencySelectEle) return;
+  currencySelectEle.innerHTML = SUPPORTED_CURRENCIES.map(
+    (c) => `<option value="${c.code}">${c.symbol} ${c.code}</option>`
+  ).join("");
+}
+
+// ─────────────────────────────────────────────────────────────
+// RECURRING LIST RENDER
+// ─────────────────────────────────────────────────────────────
+function renderRecurringList() {
+  if (!recurringListEle) return;
+  const all = getAllRecurring();
+
+  recurringListEle.innerHTML = all.length
+    ? all.map(createRecurringItemHTML).join("")
+    : `<p class="no-recurring">No recurring expenses yet.</p>`;
+
+  recurringListEle.querySelectorAll(".del-rec-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (confirm("Delete this recurring expense?")) {
+        deleteRecurring(Number(btn.dataset.id));
+        renderRecurringList();
+      }
+    });
+  });
+
+ recurringListEle.querySelectorAll(".edit-rec-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const newAmount = prompt(`Edit amount (${btn.dataset.currency}):`, btn.dataset.amount);
+      if (newAmount && Number(newAmount) > 0) {
+        const rec = getAllRecurring().find(r => r.id === Number(btn.dataset.id));
+        if (rec) {
+          rec.amount = Number(newAmount);
+          saveRecurring(rec);
+          renderRecurringList();
+        }
+      }
+    });
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// EVENT LISTENERS
+// ─────────────────────────────────────────────────────────────
+mobileAddScreenShowBtn.addEventListener("click", () => {
   moneyAddCardEle.classList.toggle("show");
   mobileAddScreenShowBtn.children[0].classList.toggle("rotatePlus");
 });
+
 closeEditCardBtn.addEventListener("click", () => {
   editCardEle.style.display = "none";
   hideInfo(editCardInfo);
 });
+
+editBudgetBtn?.addEventListener("click", () => {
+  showBudgetInput();                                    // switch to budget tab
+  moneyAddCardEle.classList.add("show");               // open card on mobile
+  transAmountEle.focus();                              // jump cursor to amount field
+});
+
 editTranBtn.addEventListener("click", editTran);
 addBudBtnEle.addEventListener("click", showBudgetInput);
 addExpBtnEle.addEventListener("click", showExpInput);
-addBtnEle.addEventListener("click", addTransItem);
+addBtnEle.addEventListener("click", addTransItem);  
 clearBtnEle.addEventListener("click", clearInputForm);
+
 addNewTagBtnEle.addEventListener("click", () => {
   tagInputEle.classList.toggle("show");
 });
@@ -365,5 +614,94 @@ addNewTagBtnEle.addEventListener("click", () => {
 confirmTagBtnEle.addEventListener("click", addNewTag);
 sortTransSelectEle.addEventListener("change", sortTrans);
 
+// Show/hide frequency dropdown when recurring checkbox is toggled
+isRecurringCheckbox?.addEventListener("change", () => {
+  if (recurringFreqEle) {
+    recurringFreqEle.style.display = isRecurringCheckbox.checked ? "inline-block" : "none";
+  }
+});
+
+// Toggle recurring panel open/close
+/*recTabBtnEle?.addEventListener("click", () => {
+  recurringListEle?.classList.toggle("show");
+  renderRecurringList();
+});     */  
+
+recTabBtnEle?.addEventListener("click", () => {
+  const isShowingRecurring = transHistoryParentEle.dataset.filter === "recurring";
+
+  if (isShowingRecurring) {
+    // Exit filter — show all
+    transHistoryParentEle.dataset.filter = "";
+    renderTransHistory(localStorage.getAllTrans());
+    addTranBtnEvent();
+    recTabBtnEle.innerHTML = `🔁 Recurring <i class="fa-solid fa-chevron-down"></i>`;
+    recurringListEle?.classList.remove("show");
+    sortTransSelectEle.style.display = "";
+    if (sortRecurringEle) sortRecurringEle.style.display = "none";
+  } else {
+    // Enter filter — show only recurring
+    transHistoryParentEle.dataset.filter = "recurring";
+    const recurringOnly = localStorage.getAllTrans().filter(t => t.tag?.startsWith("🔁"));
+    renderTransHistory(recurringOnly);
+    addTranBtnEvent();
+    recTabBtnEle.innerHTML = `✕ Exit Recurring`;
+    renderRecurringList();
+    recurringListEle?.classList.add("show");
+    sortTransSelectEle.style.display = "none";
+    if (sortRecurringEle) sortRecurringEle.style.display = "";
+  }
+});
+
+sortRecurringEle?.addEventListener("change", (e) => {
+  const recurringOnly = localStorage.getAllTrans().filter(t => t.tag?.startsWith("🔁"));
+  const sortType = e.target.value;
+  const sorted = sortType === "highToLow"
+    ? sortTransHelper(recurringOnly, 1)
+    : sortType === "lowToHigh"
+    ? sortTransHelper(recurringOnly, -1)
+    : recurringOnly;
+  renderTransHistory(sorted);
+  addTranBtnEvent();
+});
+
+// ─────────────────────────────────────────────────────────────
+// INITIAL RENDER
+// ─────────────────────────────────────────────────────────────
 addTranBtnEvent();
-showChart([totalExpData, totalBudgetLeftData >= 0 ? totalBudgetLeftData : 0]);
+
+// ─────────────────────────────────────────────────────────────
+// INIT — async startup tasks
+// ─────────────────────────────────────────────────────────────
+async function init() {
+  initCurrencySelect();
+  renderRecurringList();
+
+  // Populate display currency dropdown
+  const displaySelect = document.getElementById("displayCurrencySelect");
+  if (displaySelect) {
+    displaySelect.innerHTML = SUPPORTED_CURRENCIES.map(
+      (c) => `<option value="${c.code}">${c.symbol} ${c.code}</option>`
+    ).join("");
+    displaySelect.value = localStorage.getDisplayCurrency();
+
+    displaySelect.addEventListener("change", async () => {
+      localStorage.setDisplayCurrency(displaySelect.value);
+      renderTransHistory(localStorage.getAllTrans());
+      addTranBtnEvent();
+      await totalCalculate();
+    });
+  }
+
+  await totalCalculate();   
+  showChart([totalExpData, totalBudgetLeftData >= 0 ? totalBudgetLeftData : 0]); // ← then chart
+
+  const fired = await processDue(localStorage.saveTrans.bind(localStorage));
+  if (fired > 0) {
+    renderTransHistory(localStorage.getAllTrans());
+    addTranBtnEvent();
+    await totalCalculate();
+  }
+}
+
+init();

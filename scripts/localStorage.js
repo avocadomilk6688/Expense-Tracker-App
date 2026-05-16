@@ -15,12 +15,22 @@ export default class display {
         return transData;
     }
 
+    static getDisplayCurrency() {
+     return localStorage.getItem("display-currency") || "INR";
+    }
+
+    static setDisplayCurrency(currency) {
+     localStorage.setItem("display-currency", currency);
+    }
+
     static saveTrans (trans = {}){
         const allTrans = display.getAllTrans();
         const exiting = allTrans.find(item => item.id == trans.id);
         if (exiting){
             exiting.amount = trans?.amount;
             exiting.tag = trans?.tag;
+            exiting.originalAmount = trans?.originalAmount;
+            exiting.currency = trans?.currency;
         }
         else{
             allTrans.unshift(trans);
@@ -41,6 +51,14 @@ export default class display {
         const tranId = Number(id);
         const tran = allTrans.find(item => item.id == tranId);
         return tran;
+    }
+
+    static getBudgetMeta() {
+        return JSON.parse(localStorage.getItem("budget-meta") || '{"currency":"INR","originalAmount":0}');
+    }
+
+    static setBudgetMeta(currency, originalAmount) {
+        localStorage.setItem("budget-meta", JSON.stringify({ currency, originalAmount }));
     }
 
     static getAllTags (){

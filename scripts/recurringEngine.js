@@ -84,20 +84,6 @@ export async function processDue(saveTransFn) {
 
 // ── HTML helpers ─────────────────────────────────────────────
 
-/*export function createRecurringItemHTML(rec) {
-  const freqLabel = { daily: "Every day", weekly: "Every week", monthly: "Every month" };
-  return `
-    <div class="recurring-item" data-id="${rec.id}">
-      <div>
-        <strong>${rec.tag}</strong>
-        <span class="trans-date">${rec.currency} ${rec.amount} · ${freqLabel[rec.frequency]}</span>
-      </div>
-      <button class="del-rec-btn" data-id="${rec.id}">
-        <i class="fa-regular fa-trash-can"></i>
-      </button>
-    </div>`; 
-}*/
-
 export function createRecurringItemHTML(rec) {
   const freqLabel = { daily: "Every day", weekly: "Every week", monthly: "Every month" };
   return `

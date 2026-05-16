@@ -187,28 +187,6 @@ const showExpInput = () => {
 // ─────────────────────────────────────────────────────────────
 // TRANSACTION HTML
 // ─────────────────────────────────────────────────────────────
-/*function createTranHTML(obj = {}) {
-  const amountDisplay =
-    obj.currency && obj.currency !== BASE_CURRENCY && obj.originalAmount
-      ? formatWithOriginal(obj.amount, obj.originalAmount, obj.currency)
-      : `₹${obj.amount}`;
-
-  return `<div class="trans-item" id="${obj?.id}">
-  <div>
-      <h4 class="trans-amount">-${amountDisplay}</h4>
-      <div class="tranTagContainer">
-        <p>${obj?.tag}</p>
-        <p class="trans-date">${new Date(obj?.time).toLocaleString()}</p>
-      </div>
-  </div>
-  <p class="trans-date">${new Date(obj?.time).toLocaleString()}</p>
-  <div class="trans-item-btn">
-      <button id="transEdit"><i class="fa-regular fa-pen-to-square"></i></button>
-      <button id="transDelete"><i class="fa-regular fa-trash-can"></i></button>
-  </div>
-  </div>`;
-} */
-
 function createTranHTML(obj = {}) {
   const displayCurrency = localStorage.getDisplayCurrency();
   const sym = SUPPORTED_CURRENCIES.find(c => c.code === displayCurrency)?.symbol ?? "₹";
@@ -224,7 +202,6 @@ function createTranHTML(obj = {}) {
 
   fromBaseINR(obj.amount, displayCurrency).then(converted => {
     const el = document.getElementById(domId);
-    /*if (el) el.textContent = `-${sym}${Math.round(converted)}`;       */
     if (el) el.innerHTML = `-${sym}${Math.round(converted)}${bracketHtml}`;
   });
 
@@ -453,12 +430,9 @@ function addTranBtnEvent() {
     // Edit button
     item.lastElementChild.firstElementChild.addEventListener("click", () => {
       const tranObj = localStorage.findTran(item.id);
-      /*const displayCurrency = localStorage.getDisplayCurrency();*/
       editCardEle.style.display = "flex";
       editTagEle.value          = tranObj?.tag;
       editCardEle.id            = tranObj?.id;
-      /*fromBaseINR(tranObj.amount, displayCurrency).then(converted => {
-      editAmountEle.value = Math.round(converted);    */
       editAmountEle.value = tranObj?.originalAmount ?? tranObj?.amount;
       editCardEle.dataset.currency = tranObj?.currency ?? BASE_CURRENCY;
       const sym = SUPPORTED_CURRENCIES.find(c => c.code === (tranObj?.currency ?? BASE_CURRENCY))?.symbol ?? "";
@@ -477,8 +451,6 @@ async function editTran() {
     Number(editAmountEle.value) > 0 &&
     editTagEle.value != ""
   ) {
-    /*const displayCurrency = localStorage.getDisplayCurrency();
-    const baseAmount = await toBaseINR(Number(editAmountEle.value), displayCurrency);*/
     const editCurrency = editCardEle.dataset.currency ?? BASE_CURRENCY;
     const baseAmount = await toBaseINR(Number(editAmountEle.value), editCurrency);
     const transObj = {
@@ -620,12 +592,6 @@ isRecurringCheckbox?.addEventListener("change", () => {
     recurringFreqEle.style.display = isRecurringCheckbox.checked ? "inline-block" : "none";
   }
 });
-
-// Toggle recurring panel open/close
-/*recTabBtnEle?.addEventListener("click", () => {
-  recurringListEle?.classList.toggle("show");
-  renderRecurringList();
-});     */  
 
 recTabBtnEle?.addEventListener("click", () => {
   const isShowingRecurring = transHistoryParentEle.dataset.filter === "recurring";

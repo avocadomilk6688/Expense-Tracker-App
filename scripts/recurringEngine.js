@@ -69,7 +69,7 @@ export async function processDue(saveTransFn) {
       amount: Math.round(baseAmount),
       originalAmount: rec.amount,
       currency: rec.currency,
-      tag: `🔁 ${rec.tag}`,
+      tag: `🔁 ${rec.tag.replace(/\s*\(.*\)$/, '')} (${rec.frequency})`,
       time: new Date().toISOString(),
     };
 

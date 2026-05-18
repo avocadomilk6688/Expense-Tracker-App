@@ -362,7 +362,7 @@ async function addTransItem() {
       amount: Math.round(baseAmount),
       originalAmount: Number(amount),
       currency,
-      tag: `🔁 ${checkedTagValue}`,
+      tag: `🔁 ${checkedTagValue} (${rec.frequency})`,
       time: new Date().toISOString(),
     });
 
@@ -438,6 +438,14 @@ function addTranBtnEvent() {
       const sym = SUPPORTED_CURRENCIES.find(c => c.code === (tranObj?.currency ?? BASE_CURRENCY))?.symbol ?? "";
       const label = document.getElementById("editCurrencyLabel");
       if (label) label.textContent = `(${sym} ${tranObj?.currency ?? BASE_CURRENCY})`;
+      const editFreqRow = document.getElementById("editFreqRow");
+      const editFreqSel = document.getElementById("editFreq");
+      const isRec = tranObj?.tag?.startsWith("🔁");
+      if (editFreqRow) editFreqRow.style.display = isRec ? "flex" : "none";
+      if (isRec && editFreqSel) {
+      const match = tranObj.tag.match(/\((\w+)\)$/);
+      if (match) editFreqSel.value = match[1];
+    }
     });
   });
 }
@@ -453,12 +461,18 @@ async function editTran() {
   ) {
     const editCurrency = editCardEle.dataset.currency ?? BASE_CURRENCY;
     const baseAmount = await toBaseINR(Number(editAmountEle.value), editCurrency);
+    const editFreqSel = document.getElementById("editFreq");
+    const editFreqRow = document.getElementById("editFreqRow");
+    const isRec = editTagEle.value?.startsWith("🔁");
+    const newFreq = isRec && editFreqSel ? editFreqSel.value : null;
     const transObj = {
       id: Number(editCardEle.id),
       amount: Math.round(baseAmount),
       originalAmount: Number(editAmountEle.value),
       currency: editCurrency,      
-      tag: editTagEle.value,
+      tag: newFreq
+        ? editTagEle.value.replace(/\s*\(.*\)$/, '') + ` (${newFreq})`
+        : editTagEle.value,
     };
     localStorage.saveTrans(transObj);
     const isRecurringFilter = transHistoryParentEle.dataset.filter === "recurring";

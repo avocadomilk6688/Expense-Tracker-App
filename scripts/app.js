@@ -224,8 +224,6 @@ function createTranHTML(obj = {}) {
 // ─────────────────────────────────────────────────────────────
 // TAGS
 // ─────────────────────────────────────────────────────────────
-localStorage.saveTag("Manik👨‍💻");
-
 function createTagHTML(str) {
   return `
   <input type="radio" id="${str}" name="expFor" value="${str}">

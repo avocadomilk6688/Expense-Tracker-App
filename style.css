@@ -56,11 +56,11 @@ button:hover {
 }
 
 .greeting {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  line-height: 1;
-  flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 .greeting p {
@@ -74,23 +74,23 @@ button:hover {
 }
 
 .content-row {
-  display: flex;
-  gap: 30px;
-  justify-content: space-between;
-  flex: 1;
-  min-height: 0;
+    display: flex;
+    gap: 30px;
+    justify-content: space-between;
+    flex: 1;
+    min-height: 0;
 }
 
 .currency-switcher select {
-  height: 38px;
-  padding: 0 10px;
-  border: 2px solid var(--main-blue);
-  border-radius: 50px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  background: #fff;
-  cursor: pointer;
-  outline-color: var(--blue);
+    height: 38px;
+    padding: 0 10px;
+    border: 2px solid var(--main-blue);
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    background: #fff;
+    cursor: pointer;
+    outline-color: var(--blue);
 }
 
 /*------------------------ left container starts here-------------------  */
@@ -172,13 +172,13 @@ button:hover {
 }
 
 #editBudgetBtn {
-        background: transparent;
-        font-size: 1rem;
-        padding: 4px;
-        border-radius: 50px;
-        display: grid;
-        place-content: center;
-    }
+    background: transparent;
+    font-size: 1rem;
+    padding: 4px;
+    border-radius: 50px;
+    display: grid;
+    place-content: center;
+}
 
 /* add budget or exp section  */
 
@@ -195,7 +195,7 @@ button:hover {
 .add-type {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     border-radius: 15px 15px 0px 0;
     height: 45px;
     overflow: hidden;
@@ -469,74 +469,80 @@ input[type="text"] {
 
 /* ── Currency select ── */
 #currencySelect {
-  height: 35px;
-  padding: 0 8px;
-  border: none;
-  border-radius: 5px;
-  outline-color: var(--blue);
-  font-size: 0.9rem;
-  background: #fff;
-  cursor: pointer;
+    height: 35px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 5px;
+    outline-color: var(--blue);
+    font-size: 0.9rem;
+    background: #fff;
+    cursor: pointer;
 }
 
 /* ── Recurring row ── */
 .recurring-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
 }
+
 .recurring-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  background: var(--main-blue);
-  border: 2px solid #fff;
-  padding: 3px 10px;
-  border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: var(--main-blue);
+    border: 2px solid #fff;
+    padding: 3px 10px;
+    border-radius: 50px;
 }
+
 #recurringFreq {
-  height: 28px;
-  border-radius: 50px;
-  border: none;
-  padding: 0 8px;
-  font-size: 0.85rem;
-  outline-color: var(--blue);
-  background: var(--yellow);
+    height: 28px;
+    border-radius: 50px;
+    border: none;
+    padding: 0 8px;
+    font-size: 0.85rem;
+    outline-color: var(--blue);
+    background: var(--yellow);
 }
 
 /* ── Recurring panel ── */
 .rec-tab-btn {
-  background: var(--main-blue);
-  border-radius: 50px;
-  padding: 4px 14px;
-  font-size: 0.85rem;
+    background: var(--main-blue);
+    border-radius: 50px;
+    padding: 4px 14px;
+    font-size: 0.85rem;
 }
 
 .recurring-list {
-  display: none !important;
+    display: none !important;
 }
 
 .del-rec-btn {
-  background: var(--main-blue);
-  height: 30px; width: 30px;
-  border-radius: 50px;
-  display: grid;
-  place-content: center;
+    background: var(--main-blue);
+    height: 30px;
+    width: 30px;
+    border-radius: 50px;
+    display: grid;
+    place-content: center;
 }
 
 .edit-rec-btn {
-  background: var(--main-blue);
-  height: 30px;
-  width: 30px;
-  border-radius: 50px;
-  display: grid;
-  place-content: center;
+    background: var(--main-blue);
+    height: 30px;
+    width: 30px;
+    border-radius: 50px;
+    display: grid;
+    place-content: center;
 }
 
-.approx-inr { font-size: 0.75rem; color: var(--muted-text); }
+.approx-inr {
+    font-size: 0.75rem;
+    color: var(--muted-text);
+}
 
 @media screen and (max-width:1030px) {
 
@@ -649,7 +655,7 @@ input[type="text"] {
 
     .total-budget #editBudgetBtn:hover {
         opacity: 1;
-        background: rgba(255,255,255,0.2);
+        background: rgba(255, 255, 255, 0.2);
     }
 
     .greeting {

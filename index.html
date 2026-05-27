@@ -25,9 +25,10 @@
         </div>
         <div class="edit-form-container">
             <div class="flex-col edit-amount">
-               <!--- <label for="editAmount">Amount</label>-->
-               <!-- ADD this line after the Amount label in the edit form -->
-                <label for="editAmount">Amount <span id="editCurrencyLabel" style="font-size:0.85rem; color:#614a4a;"></span></label>
+                <!--- <label for="editAmount">Amount</label>-->
+                <!-- ADD this line after the Amount label in the edit form -->
+                <label for="editAmount">Amount <span id="editCurrencyLabel"
+                        style="font-size:0.85rem; color:#614a4a;"></span></label>
                 <input type="number" min="0" name="amount" id="editAmount">
             </div>
             <div class="exp-for-edit flex-col">
@@ -61,133 +62,142 @@
 
         <!---------------------------- left section strats here  -------------------------->
         <div class="content-row">
-        <div class="left-container">
+            <div class="left-container">
 
-            <div class="display-cards">
+                <div class="display-cards">
 
-                <!-- money left card  -->
-                <div class="money-left-card">
-                    <div class="card-text-container">
-                        <p>Buget Left</p>
-                        <h1>₹<span id="budgetLeft">0</span></h1>
+                    <!-- money left card  -->
+                    <div class="money-left-card">
+                        <div class="card-text-container">
+                            <p>Buget Left</p>
+                            <h1>₹<span id="budgetLeft">0</span></h1>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="myChart"></canvas>
+                        </div>
                     </div>
-                    <div class="chart-container">
-                        <canvas id="myChart"></canvas>
+
+
+                    <!-- total money cards  -->
+                    <div class="budg-exp-container">
+
+                        <div class="total-card total-budget">
+                            <p>Total Budget</p>
+                            <div>
+                                <h4>₹<span id="totalBudget">0</span></h4>
+                                <button id="editBudgetBtn" title="Change Budget">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="total-card total-exp">
+                            <p>Total Expense</p>
+                            <div>
+                                <h4>₹<span id="totalExp">0</span></h4>
+                            </div>
+                        </div>
                     </div>
+
+
                 </div>
+                <!-- add exp or budget card  -->
 
+                <div class="add-money-card">
 
-                <!-- total money cards  -->
-                <div class="budg-exp-container">
+                    <div class="add-type">
+                        <button class="add-exp-btn selected-add-exp">Add Expense</button>
+                        <button class="add-bud-btn">Change Budget</button>
+                        <button id="categoryBudgetsTabBtn" class="cat-lim-btn">Category Limit</button>
+                    </div>
 
-                    <div class="total-card total-budget">
-                        <p>Total Budget</p>
-                        <div>
-                            <h4>₹<span id="totalBudget">0</span></h4>
-                            <button id="editBudgetBtn" title="Change Budget">
-                                <i class="fa-regular fa-pen-to-square"></i>
+                    <div class="form-container">
+                        <div class="flex-col add-amount">
+                            <label for="addAmount">Amount</label>
+                            <input type="number" min="0" name="amount" id="addAmount">
+                            </select>
+                        </div>
+
+                        <!-- Currency selector -->
+                        <div class="flex-col select-currency">
+                            <label for="currencySelect">Currency</label>
+                            <select id="currencySelect"></select> <!-- populated by initCurrencySelect() -->
+                        </div>
+
+                        <div id="recurringRow" class="recurring-row">
+                            <label class="recurring-toggle">
+                                <input type="checkbox" id="isRecurring"> Recurring
+                            </label>
+                            <select id="recurringFreq" style="display:none">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+
+                        <div class="exp-for">
+                            <div class="tags-conatiner">
+                            </div>
+                            <div class="tag-input">
+                                <input type="text" name="" maxlength="20" id="tagInputField">
+                                <button id="confirmNewTag"><i class="fa-solid fa-check"></i></button>
+                            </div>
+                            <button id="addTagBtn">
+                                Add tag <i class="fa-solid fa-plus"></i>
                             </button>
+
                         </div>
+
+                    </div>
+                    <div id="categoryBudgetsContainerBlock" style="display: none; padding: 0 20px; width: 100%;">
+                        <div class="category-limits-card"
+                            style="margin-top: 0; padding: 0; border: none; background: transparent;">
+                            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 15px;">Category Limit</h3>
+                            <div id="categoryProgressContainer">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-container"><i class="fa-solid fa-circle-info"></i>
+                        <p class="info"></p>
                     </div>
 
-                    <div class="total-card total-exp">
-                        <p>Total Expense</p>
-                        <div>
-                            <h4>₹<span id="totalExp">0</span></h4>
-                        </div>
+                    <div class="add-money-card-btn">
+                        <button id="addBtn">Add <i class="fa-solid fa-plus"></i></button>
+                        <button id="clearBtn">Clear</button>
                     </div>
+
+
                 </div>
-
 
             </div>
-            <!-- add exp or budget card  -->
+            <!------------------------------------ left section ends here  --------------------->
 
-            <div class="add-money-card">
 
-                <div class="add-type">
-                    <button class="add-exp-btn selected-add-exp">Add Expense</button>
-                    <button class="add-bud-btn">Change Budget</button>
+
+
+            <div class="right-container">
+                <div class="history-text">
+                    <h1>History</h1>
+                    <button id="recTabBtn" class="rec-tab-btn">
+                        🔁 Recurring <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="recurring-list"></div>
+                    <select name="sortTrans" id="sortTrans">
+                        <option value="default">Default</option>
+                        <option value="highToLow">High to Low</option>
+                        <option value="lowToHigh">Low to High</option>
+                    </select>
+
+                    <select name="sortRecurring" id="sortRecurring" style="display:none">
+                        <option value="default">Default</option>
+                        <option value="highToLow">High to Low</option>
+                        <option value="lowToHigh">Low to High</option>
+                    </select>
                 </div>
 
-                <div class="form-container">
-                    <div class="flex-col add-amount">
-                        <label for="addAmount">Amount</label>
-                        <input type="number" min="0" name="amount" id="addAmount">
-                </select>
-                    </div>
+                <div class="money-history-container">
 
-                    <!-- Currency selector -->
-                <div class="flex-col">
-                    <label for="currencySelect">Currency</label>
-                    <select id="currencySelect"></select>   <!-- populated by initCurrencySelect() -->
-                </div>
-                
-                <div id="recurringRow" class="recurring-row">
-                 <label class="recurring-toggle">
-                    <input type="checkbox" id="isRecurring"> Recurring
-                 </label>
-                 <select id="recurringFreq" style="display:none">
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                 </select>
-                </div>
-
-                    <div class="exp-for">
-                        <div class="tags-conatiner">
-                        </div>
-                        <div class="tag-input">
-                            <input type="text" name="" maxlength="20" id="tagInputField">
-                            <button id="confirmNewTag"><i class="fa-solid fa-check"></i></button>
-                        </div>
-                        <button id="addTagBtn">
-                            Add tag <i class="fa-solid fa-plus"></i>
-                        </button>
-
-                    </div>
-
-                </div>
-                <div class="info-container"><i class="fa-solid fa-circle-info"></i>
-                    <p class="info"></p>
-                </div>
-
-                <div class="add-money-card-btn">
-                    <button id="addBtn">Add <i class="fa-solid fa-plus"></i></button>
-                    <button id="clearBtn">Clear</button>
-                </div>
-
-
-            </div>
-
-        </div>
-        <!------------------------------------ left section ends here  --------------------->
-
-
-
-
-        <div class="right-container">
-            <div class="history-text">
-                <h1>History</h1>
-                <button id="recTabBtn" class="rec-tab-btn">
-                    🔁 Recurring <i class="fa-solid fa-chevron-down"></i>
-                </button>
-                <div class="recurring-list"></div>
-                <select name="sortTrans" id="sortTrans">
-                    <option value="default">Default</option>
-                    <option value="highToLow">High to Low</option>
-                    <option value="lowToHigh">Low to High</option>
-                </select>
-
-                <select name="sortRecurring" id="sortRecurring" style="display:none">
-                    <option value="default">Default</option>
-                    <option value="highToLow">High to Low</option>
-                    <option value="lowToHigh">Low to High</option>
-                </select>
-            </div>
-
-            <div class="money-history-container">
-
-                <!-- <div class="trans-item" id="${obj?.id}">
+                    <!-- <div class="trans-item" id="${obj?.id}">
   <div>
       <h4>-₹${obj?.amount}</h4>
       <div class="tranTagContainer">
@@ -202,16 +212,16 @@
   </div>
   </div> -->
 
+                </div>
             </div>
-        </div>                         
-    </div>
+        </div>
 
 
 
-    <!-- chart.js cdn for pie card  -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <!-- chart.js cdn for pie card  -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script src="./scripts/app.js" type="module"></script>
+        <script src="./scripts/app.js" type="module"></script>
 
 </body>
 

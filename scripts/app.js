@@ -14,6 +14,10 @@ import {
   createRecurringItemHTML,
 } from "./recurringEngine.js";
 import { updateCategoryProgressBars } from "./categoryEngine.js";
+import {
+  executeHistoryFilter,
+  populateFilterDropdown,
+} from "./filterEngine.js";
 
 // ─────────────────────────────────────────────────────────────
 // COLORS
@@ -357,6 +361,7 @@ function addNewTag() {
   if (tagValue != "") {
     localStorage.saveTag(tagValue);
     renderTags();
+    populateFilterDropdown();
   }
   tagInputField.value = "";
   tagInputEle.classList.remove("show");
@@ -811,6 +816,79 @@ async function init() {
       await totalCalculate();
     });
   }
+
+  // ───────────────────────────────────────────────────────────
+  // LIVE FILTER SYSTEM WORKSPACE INITIALIZATION
+  // ───────────────────────────────────────────────────────────
+  // Build dynamic dropdown filtering categories from user tags
+  populateFilterDropdown();
+
+  // Unified callback wrapper to refresh UI with sorted/filtered dataset
+  const triggerLiveFilterUpdate = () => {
+    const filteredData = executeHistoryFilter();
+    renderTransHistory(filteredData);
+    addTranBtnEvent(); // Re-bind edit/delete listener hubs to active layout elements
+  };
+
+  // Bind key real-time input fields to track changes dynamically
+  [
+    "searchKeyword",
+    "filterCategory",
+    "filterMinPrice",
+    "filterMaxPrice",
+    "filterStartDate",
+    "filterEndDate",
+  ].forEach((id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener("input", triggerLiveFilterUpdate);
+      element.addEventListener("change", triggerLiveFilterUpdate);
+    }
+  });
+
+  // Bind preset calendar timeline selector shortcuts (Today, 7 Days, 30 Days)
+  document.querySelectorAll(".date-shortcut-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const days = Number(e.target.dataset.days);
+      const now = new Date();
+
+      // Extract ISO date-string fragment cleanly (YYYY-MM-DD)
+      const endString = now.toISOString().split("T")[0];
+      if (days > 0) {
+        now.setDate(now.getDate() - days);
+      }
+      const startString = now.toISOString().split("T")[0];
+
+      const startInput = document.getElementById("filterStartDate");
+      const endInput = document.getElementById("filterEndDate");
+
+      if (startInput && endInput) {
+        startInput.value = startString;
+        endInput.value = endString;
+      }
+      triggerLiveFilterUpdate();
+    });
+  });
+
+  // Clear/Reset filter parameters action back to standard defaults
+  document.getElementById("clearFiltersBtn")?.addEventListener("click", () => {
+    [
+      "searchKeyword",
+      "filterMinPrice",
+      "filterMaxPrice",
+      "filterStartDate",
+      "filterEndDate",
+    ].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+
+    const catDrop = document.getElementById("filterCategory");
+    if (catDrop) catDrop.value = "all";
+
+    triggerLiveFilterUpdate();
+  });
+  // ───────────────────────────────────────────────────────────
 
   await totalCalculate();
   showChart([totalExpData, totalBudgetLeftData >= 0 ? totalBudgetLeftData : 0]); // ← then chart

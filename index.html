@@ -201,23 +201,56 @@
                     </select>
                 </div>
 
+                <div class="filter-controls-wrapper"
+                    style="background: #ffffff; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #aeaeae; display: flex; flex-direction: column; gap: 12px;">
+
+                    <div style="position: relative; width: 100%;">
+                        <i class="fa-solid fa-magnifying-glass"
+                            style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 0.9rem;"></i>
+                        <input type="text" id="searchKeyword" placeholder="Search specific items, stores or vendors..."
+                            style="width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #aeaeae; border-radius: 8px; font-size: 0.85rem; outline: none;">
+                    </div>
+
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
+                        <select id="filterCategory"
+                            style="flex: 1; min-width: 120px; height: 35px; padding: 0 10px; border: 1px solid #aeaeae; border-radius: 8px; font-size: 0.85rem; color: #444; background: #fff; outline: none;">
+                            <option value="all">All Categories</option>
+                        </select>
+
+                        <input type="number" id="filterMinPrice" placeholder="Min Price"
+                            style="width: 100px; height: 35px; border: 1px solid #aeaeae; border-radius: 8px; font-size: 0.85rem; padding: 5px 10px;">
+                        <input type="number" id="filterMaxPrice" placeholder="Max Price"
+                            style="width: 100px; height: 35px; border: 1px solid #aeaeae; border-radius: 8px; font-size: 0.85rem; padding: 5px 10px;">
+                    </div>
+
+                    <div
+                        style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted-text);">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <label>From:</label>
+                            <input type="date" id="filterStartDate"
+                                style="padding: 4px 8px; border: 1px solid #aeaeae; border-radius: 8px; font-size: 0.85rem; background: #fff;">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <label>To:</label>
+                            <input type="date" id="filterEndDate"
+                                style="padding: 4px 8px; border: 1px solid #aeaeae; border-radius: 8px; font-size: 0.85rem; background: #fff;">
+                        </div>
+
+                        <div style="display: flex; gap: 6px; margin-left: auto;">
+                            <button type="button" class="date-shortcut-btn" data-days="0"
+                                style="padding: 5px 10px; background: var(--main-blue); border-radius: 50px; font-size: 0.8rem; font-weight: 500;">Today</button>
+                            <button type="button" class="date-shortcut-btn" data-days="7"
+                                style="padding: 5px 10px; background: var(--main-blue); border-radius: 50px; font-size: 0.8rem; font-weight: 500;">7
+                                Days</button>
+                            <button type="button" class="date-shortcut-btn" data-days="30"
+                                style="padding: 5px 10px; background: var(--main-blue); border-radius: 50px; font-size: 0.8rem; font-weight: 500;">30
+                                Days</button>
+                            <button type="button" id="clearFiltersBtn"
+                                style="padding: 5px 12px; background: var(--yellow); font-weight: 600; border-radius: 50px; font-size: 0.8rem;">Reset</button>
+                        </div>
+                    </div>
+                </div>
                 <div class="money-history-container">
-
-                    <!-- <div class="trans-item" id="${obj?.id}">
-  <div>
-      <h4>-₹${obj?.amount}</h4>
-      <div class="tranTagContainer">
-        <p>${obj?.tag}</p>
-        <p class="trans-date">${new Date(obj?.time).toLocaleString()}</p>
-      </div>
-  </div>
-  <p class="trans-date">${new Date(obj?.time).toLocaleString()}</p>
-  <div class="trans-item-btn">
-      <button id="transEdit"><i class="fa-regular fa-pen-to-square"></i></button>
-      <button id="transDelete"><i class="fa-regular fa-trash-can"></i></button>
-  </div>
-  </div> -->
-
                 </div>
             </div>
         </div>

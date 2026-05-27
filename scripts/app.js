@@ -44,6 +44,7 @@ let allOptionLabel = document.querySelectorAll(".tags-conatiner label");
 const addBtnEle = document.getElementById("addBtn");
 const clearBtnEle = document.getElementById("clearBtn");
 const transAmountEle = document.getElementById("addAmount");
+const transNameEle = document.getElementById("addTransName");
 const expForEle = document.querySelectorAll('[name="expFor"]');
 const transHistoryParentEle = document.querySelector(
   ".money-history-container",
@@ -173,6 +174,9 @@ const showBudgetInput = () => {
   const formContainer = document.querySelector(".form-container");
   if (formContainer) formContainer.style.display = "";
 
+  const nameDiv = document.querySelector(".add-name");
+  if (nameDiv) nameDiv.style.display = "none";
+
   // Explicitly restore visibility of your clean input targets
   const amountDiv = document.querySelector(".add-amount");
   if (amountDiv) amountDiv.style.display = "";
@@ -213,6 +217,9 @@ const showExpInput = () => {
   // Erase our block overrides and let the browser native CSS rules control the layout
   const formContainer = document.querySelector(".form-container");
   if (formContainer) formContainer.style.display = "";
+
+  const nameDiv = document.querySelector(".add-name");
+  if (nameDiv) nameDiv.style.display = "";
 
   // Explicitly restore visibility of your clean input targets
   const amountDiv = document.querySelector(".add-amount");
@@ -301,8 +308,8 @@ function createTranHTML(obj = {}) {
   <div>
       <h4 class="trans-amount" id="${domId}">-${sym}...</h4>
       <div class="tranTagContainer">
-        <p>${obj?.tag}</p>
-        <p class="trans-date">${new Date(obj?.time).toLocaleString()}</p>
+        <p style="font-weight: 600; margin-bottom: 2px; color: #333;">${obj?.name || "Unspecified Item"}</p>
+        <p><span style="background: #eef2f3; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">${obj?.tag}</span></p>
       </div>
   </div>
   <p class="trans-date">${new Date(obj?.time).toLocaleString()}</p>
@@ -419,12 +426,16 @@ function clearCheckedTag(checkedTag) {
 // ─────────────────────────────────────────────────────────────
 async function addTransItem() {
   const amountEle = document.getElementById("addAmount");
+
   const checkedTag = findCheckedTag(
     Array.from(document.querySelectorAll('[name="expFor"]')),
   );
   const amount = amountEle.value;
   const currency = currencySelectEle?.value ?? BASE_CURRENCY;
   const checkedTagValue = checkedTag ? checkedTag.value : undefined;
+
+  const liveNameInput = document.getElementById("addTransName");
+  const transactionName = liveNameInput ? liveNameInput.value.trim() : "";
 
   // Validation
   if (!amount || Number(amount) <= 0) {
@@ -442,6 +453,7 @@ async function addTransItem() {
     // ── Save as a recurring template ──────────────────────────
     const rec = {
       id: Math.floor(Math.random() * 10_000_000),
+      name: transactionName || `Recurring ${checkedTagValue}`,
       amount: Number(amount),
       currency,
       tag: checkedTagValue,
@@ -454,6 +466,7 @@ async function addTransItem() {
     // Fire first occurrence right now
     localStorage.saveTrans({
       id: Math.floor(Math.random() * 10_000_000),
+      name: transactionName || "Unspecified Item",
       amount: Math.round(baseAmount),
       originalAmount: Number(amount),
       currency,
@@ -473,6 +486,7 @@ async function addTransItem() {
     // ── One-time transaction ──────────────────────────────────
     localStorage.saveTrans({
       id: Math.floor(Math.random() * 10_000_000),
+      name: transactionName || "Unspecified Item",
       amount: Math.round(baseAmount),
       originalAmount: Number(amount),
       currency,
@@ -488,6 +502,7 @@ async function addTransItem() {
 
   // Reset form
   amountEle.value = "";
+  if (transNameEle) transNameEle.value = "";
   clearCheckedTag(checkedTag);
   if (isRecurringCheckbox) isRecurringCheckbox.checked = false;
   if (recurringFreqEle) recurringFreqEle.style.display = "none";

@@ -1,4 +1,4 @@
-import localStorage from "./localStorage.js";
+import * as localStorage from "./firebaseStore.js";
 import {
   toBaseINR,
   fromBaseINR, // ← ADD THIS
@@ -94,7 +94,7 @@ function hideInfo(ele) {
 // ─────────────────────────────────────────────────────────────
 
 async function totalCalculate() {
-  const allTrans = localStorage.getAllTrans();
+  const allTrans = await localStorage.getAllTrans();
   const displayCurrency = localStorage.getDisplayCurrency();
   const sym =
     SUPPORTED_CURRENCIES.find((c) => c.code === displayCurrency)?.symbol ?? "₹";
@@ -194,7 +194,6 @@ const showBudgetInput = () => {
     document.getElementById("categoryBudgetsContainerBlock").style.display =
       "none";
 
-  // FIXED: Erase inline display overrides so your teammate's CSS handles button alignment perfectly
   const actionButtons = document.querySelector(".add-money-card-btn");
   if (actionButtons) actionButtons.style.display = "";
 
@@ -225,7 +224,7 @@ const showExpInput = () => {
   const nameDiv = document.querySelector(".add-name");
   if (nameDiv) nameDiv.style.display = "";
 
-  // Explicitly restore visibility of your clean input targets
+  // Explicitly restore visibility of clean input targets
   const amountDiv = document.querySelector(".add-amount");
   if (amountDiv) amountDiv.style.display = "";
   const currencyDiv = document.querySelector(".select-currency");
@@ -238,7 +237,6 @@ const showExpInput = () => {
     document.getElementById("categoryBudgetsContainerBlock").style.display =
       "none";
 
-  // FIXED: Erase inline display overrides so your teammate's CSS handles button alignment perfectly
   const actionButtons = document.querySelector(".add-money-card-btn");
   if (actionButtons) actionButtons.style.display = "";
 
@@ -334,10 +332,10 @@ function createTagHTML(str) {
   `;
 }
 
-function renderTags() {
+async function renderTags() {
   tagContainer.innerHTML = "";
-  const tagArray = localStorage.getAllTags();
-  if (tagArray == []) return;
+  const tagArray = await localStorage.getAllTags();
+  if (!tagArray || tagArray.length === 0) return;
 
   tagArray.forEach((tag) => {
     tagContainer.insertAdjacentHTML("afterbegin", createTagHTML(tag));
@@ -354,13 +352,11 @@ function renderTags() {
   });
 }
 
-renderTags();
-
-function addNewTag() {
+async function addNewTag() {
   const tagValue = tagInputField.value;
   if (tagValue != "") {
     localStorage.saveTag(tagValue);
-    renderTags();
+    await renderTags();
     populateFilterDropdown();
   }
   tagInputField.value = "";
@@ -372,7 +368,7 @@ function addNewTag() {
 // ─────────────────────────────────────────────────────────────
 function renderTransHistory(transArr = []) {
   transHistoryParentEle.innerHTML = "";
-  if (transArr == []) return;
+  if (!transArr || transArr.length === 0) return;
 
   transArr.forEach((transObj) => {
     transHistoryParentEle.insertAdjacentHTML(
@@ -381,8 +377,6 @@ function renderTransHistory(transArr = []) {
     );
   });
 }
-
-renderTransHistory(localStorage.getAllTrans());
 
 // ─────────────────────────────────────────────────────────────
 // CHART
@@ -469,7 +463,7 @@ async function addTransItem() {
     renderRecurringList();
 
     // Fire first occurrence right now
-    localStorage.saveTrans({
+    await localStorage.saveTrans({
       id: Math.floor(Math.random() * 10_000_000),
       name: transactionName || "Unspecified Item",
       amount: Math.round(baseAmount),
@@ -489,7 +483,7 @@ async function addTransItem() {
     );
   } else {
     // ── One-time transaction ──────────────────────────────────
-    localStorage.saveTrans({
+    await localStorage.saveTrans({
       id: Math.floor(Math.random() * 10_000_000),
       name: transactionName || "Unspecified Item",
       amount: Math.round(baseAmount),
@@ -501,9 +495,10 @@ async function addTransItem() {
     hideInfo(addAmountCardInfo);
   }
 
-  renderTransHistory(localStorage.getAllTrans());
+  const updatedHistory = await localStorage.getAllTrans();
+  renderTransHistory(updatedHistory);
   addTranBtnEvent();
-  totalCalculate();
+  await totalCalculate();
 
   // Reset form
   amountEle.value = "";
@@ -535,40 +530,47 @@ function clearInputForm() {
 function addTranBtnEvent() {
   document.querySelectorAll(".trans-item").forEach((item) => {
     // Delete button
-    item.lastElementChild.lastElementChild.addEventListener("click", () => {
-      const sure = window.confirm("Are you really wanna delete this?");
-      if (sure) {
-        localStorage.deleteTrans(item.id);
-        renderTransHistory(localStorage.getAllTrans());
-        addTranBtnEvent();
-        totalCalculate();
-      }
-    });
+    item.lastElementChild.lastElementChild.addEventListener(
+      "click",
+      async () => {
+        const sure = window.confirm("Are you really wanna delete this?");
+        if (sure) {
+          await localStorage.deleteTrans(item.id);
+          const updatedHistory = await localStorage.getAllTrans();
+          renderTransHistory(updatedHistory);
+          addTranBtnEvent();
+          await totalCalculate();
+        }
+      },
+    );
 
     // Edit button
-    item.lastElementChild.firstElementChild.addEventListener("click", () => {
-      const tranObj = localStorage.findTran(item.id);
-      editCardEle.style.display = "flex";
-      editTagEle.value = tranObj?.tag;
-      editCardEle.id = tranObj?.id;
-      editAmountEle.value = tranObj?.originalAmount ?? tranObj?.amount;
-      editCardEle.dataset.currency = tranObj?.currency ?? BASE_CURRENCY;
-      const sym =
-        SUPPORTED_CURRENCIES.find(
-          (c) => c.code === (tranObj?.currency ?? BASE_CURRENCY),
-        )?.symbol ?? "";
-      const label = document.getElementById("editCurrencyLabel");
-      if (label)
-        label.textContent = `(${sym} ${tranObj?.currency ?? BASE_CURRENCY})`;
-      const editFreqRow = document.getElementById("editFreqRow");
-      const editFreqSel = document.getElementById("editFreq");
-      const isRec = tranObj?.tag?.startsWith("🔁");
-      if (editFreqRow) editFreqRow.style.display = isRec ? "flex" : "none";
-      if (isRec && editFreqSel) {
-        const match = tranObj.tag.match(/\((\w+)\)$/);
-        if (match) editFreqSel.value = match[1];
-      }
-    });
+    item.lastElementChild.firstElementChild.addEventListener(
+      "click",
+      async () => {
+        const tranObj = await localStorage.findTran(item.id);
+        editCardEle.style.display = "flex";
+        editTagEle.value = tranObj?.tag;
+        editCardEle.id = tranObj?.id;
+        editAmountEle.value = tranObj?.originalAmount ?? tranObj?.amount;
+        editCardEle.dataset.currency = tranObj?.currency ?? BASE_CURRENCY;
+        const sym =
+          SUPPORTED_CURRENCIES.find(
+            (c) => c.code === (tranObj?.currency ?? BASE_CURRENCY),
+          )?.symbol ?? "";
+        const label = document.getElementById("editCurrencyLabel");
+        if (label)
+          label.textContent = `(${sym} ${tranObj?.currency ?? BASE_CURRENCY})`;
+        const editFreqRow = document.getElementById("editFreqRow");
+        const editFreqSel = document.getElementById("editFreq");
+        const isRec = tranObj?.tag?.startsWith("🔁");
+        if (editFreqRow) editFreqRow.style.display = isRec ? "flex" : "none";
+        if (isRec && editFreqSel) {
+          const match = tranObj.tag.match(/\((\w+)\)$/);
+          if (match) editFreqSel.value = match[1];
+        }
+      },
+    );
   });
 }
 
@@ -599,16 +601,15 @@ async function editTran() {
         ? editTagEle.value.replace(/\s*\(.*\)$/, "") + ` (${newFreq})`
         : editTagEle.value,
     };
-    localStorage.saveTrans(transObj);
+    await localStorage.saveTrans(transObj);
     const isRecurringFilter =
       transHistoryParentEle.dataset.filter === "recurring";
+    const allTrans = await localStorage.getAllTrans();
     if (isRecurringFilter) {
-      const recurringOnly = localStorage
-        .getAllTrans()
-        .filter((t) => t.tag?.startsWith("🔁"));
+      const recurringOnly = allTrans.filter((t) => t.tag?.startsWith("🔁"));
       renderTransHistory(recurringOnly);
     } else {
-      renderTransHistory(localStorage.getAllTrans());
+      renderTransHistory(allTrans);
     }
     addTranBtnEvent();
     totalCalculate();
@@ -745,39 +746,43 @@ isRecurringCheckbox?.addEventListener("change", () => {
   }
 });
 
-recTabBtnEle?.addEventListener("click", () => {
+recTabBtnEle?.addEventListener("click", async () => {
   const isShowingRecurring =
     transHistoryParentEle.dataset.filter === "recurring";
 
   if (isShowingRecurring) {
-    // Exit filter — show all
+    // Exit filter — show all transactions from cloud safely
     transHistoryParentEle.dataset.filter = "";
-    renderTransHistory(localStorage.getAllTrans());
+    const allTrans = await localStorage.getAllTrans();
+    renderTransHistory(allTrans);
     addTranBtnEvent();
     recTabBtnEle.innerHTML = `🔁 Recurring <i class="fa-solid fa-chevron-down"></i>`;
-    recurringListEle?.classList.remove("show");
+    if (recurringListEle) recurringListEle.classList.remove("show");
     sortTransSelectEle.style.display = "";
     if (sortRecurringEle) sortRecurringEle.style.display = "none";
   } else {
-    // Enter filter — show only recurring
+    // Enter filter — show only recurring templates
     transHistoryParentEle.dataset.filter = "recurring";
-    const recurringOnly = localStorage
-      .getAllTrans()
-      .filter((t) => t.tag?.startsWith("🔁"));
+
+    // Await the cloud transaction array before applying filter logic
+    const allTrans = await localStorage.getAllTrans();
+    const recurringOnly = allTrans.filter((t) => t.tag?.startsWith("🔁"));
+
     renderTransHistory(recurringOnly);
     addTranBtnEvent();
     recTabBtnEle.innerHTML = `✕ Exit Recurring`;
     renderRecurringList();
-    recurringListEle?.classList.add("show");
+    if (recurringListEle) recurringListEle.classList.add("show");
     sortTransSelectEle.style.display = "none";
     if (sortRecurringEle) sortRecurringEle.style.display = "";
   }
 });
 
-sortRecurringEle?.addEventListener("change", (e) => {
-  const recurringOnly = localStorage
-    .getAllTrans()
-    .filter((t) => t.tag?.startsWith("🔁"));
+sortRecurringEle?.addEventListener("change", async (e) => {
+  // Await live database items snapshot array
+  const allTrans = await localStorage.getAllTrans();
+  const recurringOnly = allTrans.filter((t) => t.tag?.startsWith("🔁"));
+
   const sortType = e.target.value;
   const sorted =
     sortType === "highToLow"
@@ -785,6 +790,7 @@ sortRecurringEle?.addEventListener("change", (e) => {
       : sortType === "lowToHigh"
         ? sortTransHelper(recurringOnly, -1)
         : recurringOnly;
+
   renderTransHistory(sorted);
   addTranBtnEvent();
 });
@@ -797,9 +803,15 @@ addTranBtnEvent();
 // ─────────────────────────────────────────────────────────────
 // INIT — async startup tasks
 // ─────────────────────────────────────────────────────────────
-async function init() {
+async function triggerDashboardBootstrap() {
   initCurrencySelect();
   renderRecurringList();
+
+  if (localStorage.auth.currentUser) {
+    await localStorage.fetchUserSettings(localStorage.auth.currentUser.uid);
+  }
+
+  await renderTags();
 
   // Populate display currency dropdown
   const displaySelect = document.getElementById("displayCurrencySelect");
@@ -811,23 +823,21 @@ async function init() {
 
     displaySelect.addEventListener("change", async () => {
       localStorage.setDisplayCurrency(displaySelect.value);
-      renderTransHistory(localStorage.getAllTrans());
+      const allTrans = await localStorage.getAllTrans();
+      renderTransHistory(allTrans);
       addTranBtnEvent();
       await totalCalculate();
     });
   }
 
-  // ───────────────────────────────────────────────────────────
-  // LIVE FILTER SYSTEM WORKSPACE INITIALIZATION
-  // ───────────────────────────────────────────────────────────
   // Build dynamic dropdown filtering categories from user tags
   populateFilterDropdown();
 
   // Unified callback wrapper to refresh UI with sorted/filtered dataset
-  const triggerLiveFilterUpdate = () => {
-    const filteredData = executeHistoryFilter();
+  const triggerLiveFilterUpdate = async () => {
+    const filteredData = await executeHistoryFilter();
     renderTransHistory(filteredData);
-    addTranBtnEvent(); // Re-bind edit/delete listener hubs to active layout elements
+    addTranBtnEvent();
   };
 
   // Bind key real-time input fields to track changes dynamically
@@ -888,17 +898,65 @@ async function init() {
 
     triggerLiveFilterUpdate();
   });
-  // ───────────────────────────────────────────────────────────
+
+  const startingTransactions = await localStorage.getAllTrans();
+  renderTransHistory(startingTransactions);
+  addTranBtnEvent();
 
   await totalCalculate();
-  showChart([totalExpData, totalBudgetLeftData >= 0 ? totalBudgetLeftData : 0]); // ← then chart
+  showChart([totalExpData, totalBudgetLeftData >= 0 ? totalBudgetLeftData : 0]);
 
   const fired = await processDue(localStorage.saveTrans.bind(localStorage));
   if (fired > 0) {
-    renderTransHistory(localStorage.getAllTrans());
+    const postDueTransactions = await localStorage.getAllTrans();
+    renderTransHistory(postDueTransactions);
     addTranBtnEvent();
     await totalCalculate();
   }
 }
 
-init();
+// ─────────────────────────────────────────────────────────────
+// MODULAR AUTH WORKSPACE AND ACCOUNT MIGRATION LOGIC
+// ─────────────────────────────────────────────────────────────
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import { initAuthInterface } from "./authController.js";
+
+const authScreenElement = document.getElementById("authScreen");
+const globalLogoutTriggerBtn = document.getElementById("globalLogoutBtn");
+
+// Hook up Google popup listeners to all buttons sharing the logo class selector
+document.querySelectorAll(".googleLoginBtnClass").forEach((btn) => {
+  btn.addEventListener("click", localStorage.loginWithGoogle);
+});
+
+globalLogoutTriggerBtn?.addEventListener("click", localStorage.logoutUser);
+
+// Initialize modular form switching controller logic right away
+initAuthInterface();
+
+// Security Gateway State Monitor: Watches session tokens sequentially
+onAuthStateChanged(localStorage.auth, async (user) => {
+  if (user) {
+    // Secure Session Found: Lift overlay gates and populate user profile configs
+    if (authScreenElement) authScreenElement.style.display = "none";
+    if (globalLogoutTriggerBtn)
+      globalLogoutTriggerBtn.style.display = "inline-block";
+
+    // Boot up and download data specific to this user profile
+    await triggerDashboardBootstrap();
+  } else {
+    // Session Dead / Logged Out: Close UI dashboard access instantly
+    if (authScreenElement) authScreenElement.style.display = "flex";
+    if (globalLogoutTriggerBtn) globalLogoutTriggerBtn.style.display = "none";
+
+    // Reset back to standard default login view panel card automatically
+    const loginCardElement = document.getElementById("loginCard");
+    const registerCardElement = document.getElementById("registerCard");
+    if (loginCardElement) loginCardElement.style.display = "block";
+    if (registerCardElement) registerCardElement.style.display = "none";
+
+    // Reset data fields to zero state preventing local data leakage
+    renderTransHistory([]);
+    if (tagContainer) tagContainer.innerHTML = "";
+  }
+});

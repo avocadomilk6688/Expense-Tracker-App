@@ -1,5 +1,10 @@
-import localStorage from "./localStorage.js";
 import { fromBaseINR, SUPPORTED_CURRENCIES } from "./currencyService.js";
+import {
+  getCategoryLimit,
+  setCategoryLimit,
+  getAllTrans,
+  auth,
+} from "./firebaseStore.js";
 
 /**
  * Helper function to normalize tag names by stripping out your teammate's
@@ -13,40 +18,13 @@ function normalizeTagName(tagStr) {
 }
 
 /**
- * Save a specific category limit to localStorage using team's wrapper
+ * Calculate the total spent for a specific category tag
+ * CLOUD MIGRATION: Reads records directly from Firestore user sub-collections instead of localStorage cache
  */
-export function saveCategoryLimit(categoryName, limitAmount) {
-  const existingData = localStorage.getItem
-    ? localStorage.getItem("categoryLimits")
-    : window.localStorage.getItem("categoryLimits");
-  const limits = existingData ? JSON.parse(existingData) : {};
+export async function getCategorySpent(categoryName) {
+  // Await live cloud transaction ledger snapshot array
+  const allTrans = (await getAllTrans()) || [];
 
-  limits[categoryName] = Number(limitAmount);
-
-  if (typeof localStorage.setItem === "function") {
-    localStorage.setItem("categoryLimits", JSON.stringify(limits));
-  } else {
-    window.localStorage.setItem("categoryLimits", JSON.stringify(limits));
-  }
-}
-
-/**
- * Get all saved category limits from localStorage using team's wrapper
- */
-export function getCategoryLimits() {
-  const data = localStorage.getItem
-    ? localStorage.getItem("categoryLimits")
-    : window.localStorage.getItem("categoryLimits");
-  return data ? JSON.parse(data) : {};
-}
-
-/**
- * Calculate the total spent for a specific category tag (FIXED: Filtered for the current month only)
- */
-export function getCategorySpent(categoryName) {
-  const allTrans = localStorage.getAllTrans() || [];
-
-  // ─── ADDED CODE: Grab the current calendar month and year ───
   const now = new Date();
   const currentMonth = now.getMonth(); // 0 = January, 1 = February, etc.
   const currentYear = now.getFullYear();
@@ -59,7 +37,7 @@ export function getCategorySpent(categoryName) {
       // Parse the transaction timestamp
       const transDate = new Date(trans.time);
 
-      // ─── ADDED CODE: Verify the transaction falls within the current calendar month ───
+      // Verify the transaction falls within the current calendar month
       const isThisMonth =
         transDate.getMonth() === currentMonth &&
         transDate.getFullYear() === currentYear;
@@ -76,19 +54,22 @@ export async function updateCategoryProgressBars() {
   const container = document.getElementById("categoryProgressContainer");
   if (!container) return;
 
-  const displayCurrency = localStorage.getDisplayCurrency() || "INR";
+  // CLOUD MIGRATION: Read active currency preference state parameters directly from running cloud cache
+  const displayCurrency = getCategoryLimit
+    ? await import("./firebaseStore.js").then((m) => m.getDisplayCurrency())
+    : "INR";
   const sym =
     SUPPORTED_CURRENCIES.find((c) => c.code === displayCurrency)?.symbol ?? "₹";
 
-  container.innerHTML = "";
-
   // 1. Fetch baseline formal tags from your teammate's tracker array, cleaned uniformly
-  const formalTags = (localStorage.getAllTags() || []).map((t) =>
-    normalizeTagName(t),
-  );
+  const formalTags = (
+    getCategoryLimit
+      ? await import("./firebaseStore.js").then((m) => m.getAllTags())
+      : []
+  ).map((t) => normalizeTagName(t));
 
-  // 2. Scan live transaction history records and parse regular vs automated recurring items
-  const allTrans = localStorage.getAllTrans() || [];
+  // 2. CLOUD MIGRATION: Scan live cloud transaction records to discover newly appended tracking items
+  const allTrans = (await getAllTrans()) || [];
   const activeTransTags = allTrans
     .map((t) => normalizeTagName(t.tag))
     .filter((tag) => tag !== "");
@@ -96,17 +77,20 @@ export async function updateCategoryProgressBars() {
   // 3. De-duplicate values completely using a Set structure
   const combinedTagsSet = new Set([...formalTags, ...activeTransTags]);
   const tagArray = Array.from(combinedTagsSet);
-  const savedLimits = getCategoryLimits();
 
   if (tagArray.length === 0) {
     container.innerHTML = `<p style="font-size:0.9rem; color:#614a4a; padding:10px; text-align:center;">Please create tags in the Expense tab first.</p>`;
     return;
   }
 
+  // Initialize an empty string buffer to hold the elements
+  let htmlBuffer = "";
+
   // Generate a live tracking bar card row for every tag found
   for (const tag of tagArray) {
-    const currentLimitBase = savedLimits[tag] || 0;
-    const currentSpentBase = getCategorySpent(tag);
+    // CLOUD MIGRATION: Pulls specific category limits downward directly from Firebase configurations profile document
+    const currentLimitBase = Number(getCategoryLimit(tag)) || 0;
+    const currentSpentBase = await getCategorySpent(tag);
 
     const [dispLimit, dispSpent] = await Promise.all([
       fromBaseINR(currentLimitBase, displayCurrency),
@@ -123,7 +107,9 @@ export async function updateCategoryProgressBars() {
     const barColor = ratio >= 0.85 ? "#F38181" : "#8b8dff";
 
     const cleanTagId = tag.replace(/\s+/g, "-");
-    const tagCardHTML = `
+
+    // Append components directly into memory buffer
+    htmlBuffer += `
       <div class="category-limit-item" data-tagbase="${currentSpentBase}" style="background: #fdfdfd; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <span style="font-weight: 600; font-size: 0.95rem; color: #333;">${tag}</span>
@@ -144,9 +130,9 @@ export async function updateCategoryProgressBars() {
         </div>
       </div>
     `;
-
-    container.insertAdjacentHTML("beforeend", tagCardHTML);
   }
+
+  container.innerHTML = htmlBuffer;
 
   // Listens to real-time input typing to save and shift sizes seamlessly WITHOUT breaking page focus
   container.querySelectorAll(".limit-input-field").forEach((input) => {
@@ -165,7 +151,8 @@ export async function updateCategoryProgressBars() {
       const baseValue = await toBaseINR(targetValue, displayCurrency);
       const currentLimitBase = Math.round(baseValue);
 
-      saveCategoryLimit(targetTag, currentLimitBase);
+      // CLOUD MIGRATION: Commits target value changes dynamically directly up to your Firestore cluster document nodes!
+      await setCategoryLimit(targetTag, currentLimitBase);
 
       if (currentLimitBase > 0) {
         const ratio = currentSpentBase / currentLimitBase;

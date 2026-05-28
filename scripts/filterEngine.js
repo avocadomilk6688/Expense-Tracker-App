@@ -1,4 +1,4 @@
-import localStorage from "./localStorage.js";
+import { getAllTrans, getAllTags } from "./firebaseStore.js";
 
 // Helper utility to normalize names from recurring entries (e.g., removing the 🔁 emoji)
 function cleanTag(str) {
@@ -11,9 +11,11 @@ function cleanTag(str) {
 
 /**
  * Executes multi-parameter search filtering across database transactions array
+ * CLOUD MIGRATION: Upgraded to an async container to fetch data directly from Firestore collections
  */
-export function executeHistoryFilter() {
-  const allTrans = localStorage.getAllTrans() || [];
+export async function executeHistoryFilter() {
+  // Await live cloud transaction ledger snapshot array
+  const allTrans = (await getAllTrans()) || [];
 
   // Capture current parameter input values
   const keyword =
@@ -64,15 +66,17 @@ export function executeHistoryFilter() {
 
 /**
  * Refreshes options list inside dropdown search container menu with active system tags
+ * CLOUD MIGRATION: Made async to dynamically fetch user tags from Firestore
  */
-export function populateFilterDropdown() {
+export async function populateFilterDropdown() {
   const dropdown = document.getElementById("filterCategory");
   if (!dropdown) return;
 
   const currentSelection = dropdown.value;
   dropdown.innerHTML = '<option value="all">All Categories</option>';
 
-  const tags = localStorage.getAllTags() || [];
+  // FIXED: Await your fallback-protected cloud tag collection list
+  const tags = (await getAllTags()) || [];
   tags.forEach((tag) => {
     const cleaned = cleanTag(tag);
     dropdown.insertAdjacentHTML(

@@ -1,0 +1,23 @@
+{
+  "name": "expense-tracker-app",
+  "version": "1.0.0",
+  "description": "📝 Manage your finances efficiently with this Expense Tracker App! Track your expenses, set budgets, and visualize your spending habits to stay on top of your financial goals. Built with HTML, CSS, JavaScript, and integrated with local storage for seamless user experience.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/avocadomilk6688/Expense-Tracker-App.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/avocadomilk6688/Expense-Tracker-App/issues"
+  },
+  "homepage": "https://github.com/avocadomilk6688/Expense-Tracker-App#readme",
+  "devDependencies": {
+    "cypress": "^15.16.0"
+  }
+}

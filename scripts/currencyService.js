@@ -12,7 +12,10 @@ export const SUPPORTED_CURRENCIES = [
   { code: "SGD", symbol: "S$" },
   { code: "JPY", symbol: "¥" },
   { code: "AUD", symbol: "A$" },
-];
+  { code: "THB", symbol: "฿" },   
+  { code: "CNY", symbol: "¥" },   
+  { code: "HKD", symbol: "HK$" }, 
+  ];
 
 export const BASE_CURRENCY = "INR"; 
 
@@ -38,7 +41,29 @@ export async function getRates() {
   } catch (e) {
     console.warn("FX fetch failed, using fallback rates:", e.message);
     // Fallback static rates (USD base) — update periodically
-    return { USD: 1, INR: 83.5, EUR: 0.92, GBP: 0.79, MYR: 4.72, SGD: 1.34, JPY: 151, AUD: 1.53 };
+      const fallbackRates = {
+        USD: 1,
+        INR: 83.5,
+        EUR: 0.92,
+        GBP: 0.79,
+        MYR: 4.72,
+        SGD: 1.34,
+        JPY: 151,
+        AUD: 1.53,
+        THB: 32.6,   
+        CNY: 7.2,    
+        HKD: 7.8,    
+      };   
+      
+    localStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify({
+        rates: fallbackRates,
+        timestamp: Date.now(),
+    })
+  );
+
+  return fallbackRates;
   }
 }
 

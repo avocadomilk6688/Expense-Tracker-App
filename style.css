@@ -57,10 +57,33 @@ button:hover {
 
 .greeting {
     display: flex;
+    justify-content:space-between;
     align-items: center;
-    gap: 20px;
-    line-height: 1;
-    flex-shrink: 0;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.user-info{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.user-info p{
+    font-size:1rem;
+    color:#777;
+}
+
+.user-info h1{
+    font-size:2.2rem;
+    font-weight:700;
+    color:#222;
+}
+
+.greeting-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
 }
 
 .greeting p {
@@ -96,14 +119,14 @@ button:hover {
 /*------------------------ left container starts here-------------------  */
 .left-container {
     height: 100%;
-    width: 40%;
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
-
 /* money left card  */
+
 .money-left-card {
     display: flex;
     height: 150px;
@@ -133,7 +156,6 @@ button:hover {
     font-size: 1.5rem;
     color: #424242;
 }
-
 
 /* total ammounts section  */
 
@@ -309,8 +331,9 @@ input[type="text"] {
 /*------------------------------- left container ends here--------------------------  */
 
 /* -------------------------------- right container starts here ----------------------   */
+
 .right-container {
-    width: 60%;
+    flex: 1.4;
 }
 
 .right-container .history-text {
@@ -331,29 +354,71 @@ input[type="text"] {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    height: calc(100% - 60px);
-    overflow-y: scroll;
+    height: auto;
+    overflow-y: visible;
 }
 
-.money-history-container .trans-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 20px;
-    font-size: 1.1rem;
-    border: 1px solid #aeaeae;
-    border-radius: 15px;
+ .money-history-container .trans-item {
+    display: grid;
+    grid-template-columns: 170px 1fr 180px 90px;
     align-items: center;
+    gap: 25px;
+
+    padding: 18px 24px;
+    border: 1px solid #d8d8d8;
+    border-radius: 18px;
+    background: white;
+}
+
+.trans-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.trans-amount {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--red);
+}
+
+.approx-inr {
+    margin-top: 2px;
+    font-size: 0.85rem;
+    color: var(--muted-text);
+}
+
+.trans-middle {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.trans-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.trans-tag {
+    font-size: 0.95rem;
+    color: #444;
+}
+
+.trans-date {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--muted-text);
+}
+
+.trans-item-btn {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 .trans-item h4 {
     font-size: 1.5rem;
     color: var(--red);
-}
-
-.trans-item div:nth-child(1) {
-    display: flex;
-    gap: 20px;
-    align-items: center;
 }
 
 .trans-item .trans-item-btn {
@@ -388,8 +453,8 @@ input[type="text"] {
 
 /* -------------------------------- right container ends here ----------------------   */
 
-
 /* edit money card stars here  */
+
 .edit-money-card {
     overflow: hidden;
     position: fixed;
@@ -427,8 +492,6 @@ input[type="text"] {
     background-color: var(--light-blue);
 }
 
-
-
 .edit-money-card .add-type {
     background-color: var(--yellow);
     text-align: center;
@@ -451,6 +514,7 @@ input[type="text"] {
 }
 
 /* edit money card ends here  */
+
 .mobile-add-btn {
     display: none;
     place-content: center;
@@ -468,6 +532,7 @@ input[type="text"] {
 
 
 /* ── Currency select ── */
+
 #currencySelect {
     height: 35px;
     padding: 0 8px;
@@ -480,6 +545,7 @@ input[type="text"] {
 }
 
 /* ── Recurring row ── */
+
 .recurring-row {
     display: flex;
     align-items: center;
@@ -510,6 +576,7 @@ input[type="text"] {
 }
 
 /* ── Recurring panel ── */
+
 .rec-tab-btn {
     background: var(--main-blue);
     border-radius: 50px;
@@ -572,11 +639,50 @@ input[type="text"] {
 
     .content-row {
         flex-direction: column;
-        gap: 20px;
+        flex: none;
+    }
+
+    .money-history-container .trans-item {
+        grid-template-columns: 110px 1fr 140px 70px;
+        gap: 12px;
+        padding: 14px 16px;
+        align-items: center;
+    }
+
+    .trans-amount {
+        font-size: 1.2rem;
+    }
+
+    .approx-inr {
+        font-size: 0.75rem;
+    }
+
+    .trans-title {
+        font-size: 1rem;
+    }
+
+    .trans-tag {
+        font-size: 0.85rem;
+    }
+
+    .trans-date {
+        font-size: 0.8rem;
+        text-align: center;
+    }
+
+    .trans-item-btn {
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .trans-item-btn button {
+        width: 32px;
+        height: 32px;
     }
 
     .left-container {
-        width: 100%;
+        height: auto;
+        justify-content: flex-start;
     }
 
     .money-left-card {
@@ -598,23 +704,19 @@ input[type="text"] {
         -webkit-transform: rotate(40deg);
     }
 
-
-
-
     .add-money-card {
-        display: none;
+        display: flex;
         box-shadow: 0px 0px 30px #00000099;
-        position: fixed;
-        width: 90%;
+        position: static;
+        width: 100%;
+        margin-top: 20px;
         bottom: 20px;
         left: 50%;
-        transform: translate(-50%, -50%);
+        transform: none;
         animation-name: fade;
         animation-duration: 0.3s;
         animation-timing-function: ease-in-out;
     }
-
-
 
     .money-left-card p {
         font-size: 1.2rem;
@@ -659,39 +761,32 @@ input[type="text"] {
     }
 
     .greeting {
-        display: inline-block;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
 
+    .user-info {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .greeting-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        width: auto;
     }
 
     .right-container {
         width: 100%;
+        margin-top: 20px;
     }
 
     .right-container .history-text {
         font-size: 1rem;
-    }
-
-    .trans-item {
-        padding: 5px 10px;
-    }
-
-    .trans-item h4 {
-        font-size: 1.2rem;
-        white-space: nowrap;
-    }
-
-    .trans-item p {
-        font-size: 1rem;
-    }
-
-    .trans-item-btn button {
-        font-size: 0.8rem;
-        height: 30px;
-        width: 30px;
-    }
-
-    .trans-date {
-        display: none;
     }
 
     .tranTagContainer .trans-date {
@@ -700,7 +795,7 @@ input[type="text"] {
     }
 
     .mobile-add-btn {
-        display: grid;
+        display: none;
     }
 
 }

@@ -306,20 +306,37 @@ function createTranHTML(obj = {}) {
     if (el) el.innerHTML = `-${sym}${Math.round(converted)}${bracketHtml}`;
   });
 
-  return `<div class="trans-item" id="${obj?.id}">
-  <div>
-      <h4 class="trans-amount" id="${domId}">-${sym}...</h4>
-      <div class="tranTagContainer">
-        <p style="font-weight: 600; margin-bottom: 2px; color: #333;">${obj?.name || "Unspecified Item"}</p>
-        <p><span style="background: #eef2f3; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">${obj?.tag}</span></p>
-      </div>
-  </div>
-  <p class="trans-date">${new Date(obj?.time).toLocaleString()}</p>
-  <div class="trans-item-btn">
-      <button id="transEdit"><i class="fa-regular fa-pen-to-square"></i></button>
-      <button id="transDelete"><i class="fa-regular fa-trash-can"></i></button>
-  </div>
-  </div>`;
+  return `
+<div class="trans-item" id="${obj?.id}">
+    <div class="trans-left">
+        <h4 class="trans-amount" id="${domId}">
+            -${sym}...
+        </h4>
+    </div>
+
+    <div class="trans-middle">
+        <p class="trans-title">
+            ${obj?.name || "Unspecified Item"}
+        </p>
+        <span class="trans-tag">
+            ${obj?.tag}
+        </span>
+    </div>
+
+    <div class="trans-date">
+        ${new Date(obj?.time).toLocaleString()}
+    </div>
+
+    <div class="trans-item-btn">
+        <button id="transEdit">
+            <i class="fa-regular fa-pen-to-square"></i>
+        </button>
+        <button id="transDelete">
+            <i class="fa-regular fa-trash-can"></i>
+        </button>
+    </div>
+</div>
+`;
 }
 
 // ─────────────────────────────────────────────────────────────

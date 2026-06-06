@@ -26,7 +26,7 @@ export function deleteRecurring(id) {
 
 // ── Due-date logic ────────────────────────────────────────────
 
-function isDue(rec) {
+export function isDue(rec) {
   if (!rec.lastRun) return true; // never run yet → immediately due
 
   const last = new Date(rec.lastRun);

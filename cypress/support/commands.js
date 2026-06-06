@@ -17,10 +17,10 @@ Cypress.Commands.add("login", () => {
   cy.visit("http://localhost:5500");
 
   cy.get("#authEmail")
-    .type("abc@gmail.com");
+    .type("abc@gmail.com"); // Change to your test account email
 
   cy.get("#authPassword")
-    .type("123456");
+    .type("123456"); // Change to your test account password
 
   cy.get("#emailAuthSubmitBtn")
     .click();

@@ -146,6 +146,7 @@ function swapCurrencySymbols(sym) {
 async function addBudgetInput() {
   const amount = transAmountEle.value;
   const currency = currencySelectEle?.value ?? BASE_CURRENCY;
+  console.log(currencySelectEle.value);
 
   if (amount == "") {
     showInfo(addAmountCardInfo, "Please enter budget amount.");

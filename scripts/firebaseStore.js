@@ -344,6 +344,7 @@ export async function saveTag(tagString) {
   }
 }
 
+
 export async function findTran(targetDocId) {
   try {
     const all = await getAllTrans();

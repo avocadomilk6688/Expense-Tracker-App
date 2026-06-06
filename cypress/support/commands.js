@@ -11,7 +11,26 @@
 //
 // -- This is a parent command --
 // Cypress.Commands.add('login', (email, password) => { ... })
-//
+
+Cypress.Commands.add("login", () => {
+
+  cy.visit("http://localhost:5500");
+
+  cy.get("#authEmail")
+    .type("abc@gmail.com");
+
+  cy.get("#authPassword")
+    .type("123456");
+
+  cy.get("#emailAuthSubmitBtn")
+    .click();
+
+  cy.get("#currencySelect", {
+    timeout: 20000
+  }).should("be.visible");
+
+});
+
 //
 // -- This is a child command --
 // Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })

@@ -1,7 +1,7 @@
 import * as localStorage from "./firebaseStore.js";
 import {
   toBaseINR,
-  fromBaseINR, // ← ADD THIS
+  fromBaseINR, 
   SUPPORTED_CURRENCIES,
   BASE_CURRENCY,
   formatWithOriginal,
@@ -153,9 +153,11 @@ async function addBudgetInput() {
   }
 
   const baseAmount = await toBaseINR(Number(amount), currency);
-  localStorage.setTotalBudget(Math.round(baseAmount));
-  localStorage.setBudgetMeta(currency, Number(amount));
-  totalCalculate();
+
+  await localStorage.setTotalBudget(Math.round(baseAmount));
+  await localStorage.setBudgetMeta(currency, Number(amount));
+  await totalCalculate();
+
   hideInfo(addAmountCardInfo);
 }
 
@@ -307,7 +309,9 @@ function createTranHTML(obj = {}) {
   });
 
   return `
-<div class="trans-item" id="${obj?.id}">
+<div class="trans-item"
+     id="${obj?.id}"
+     data-docid="${obj?.docId}">
     <div class="trans-left">
         <h4 class="trans-amount" id="${domId}">
             -${sym}...
@@ -481,7 +485,7 @@ async function addTransItem() {
 
     // Fire first occurrence right now
     await localStorage.saveTrans({
-      id: Math.floor(Math.random() * 10_000_000),
+      id: String(Math.floor(Math.random() * 10_000_000)),
       name: transactionName || "Unspecified Item",
       amount: Math.round(baseAmount),
       originalAmount: Number(amount),
@@ -550,9 +554,9 @@ function addTranBtnEvent() {
     item.lastElementChild.lastElementChild.addEventListener(
       "click",
       async () => {
-        const sure = window.confirm("Are you really wanna delete this?");
+          const sure = window.confirm("Are you really wanna delete this?");
         if (sure) {
-          await localStorage.deleteTrans(item.id);
+          await localStorage.deleteTrans(item.dataset.docid);
           const updatedHistory = await localStorage.getAllTrans();
           renderTransHistory(updatedHistory);
           addTranBtnEvent();
@@ -565,10 +569,10 @@ function addTranBtnEvent() {
     item.lastElementChild.firstElementChild.addEventListener(
       "click",
       async () => {
-        const tranObj = await localStorage.findTran(item.id);
+        const tranObj = await localStorage.findTran(item.dataset.docid);
         editCardEle.style.display = "flex";
         editTagEle.value = tranObj?.tag;
-        editCardEle.id = tranObj?.id;
+        editCardEle.dataset.docid = tranObj?.docId;
         editAmountEle.value = tranObj?.originalAmount ?? tranObj?.amount;
         editCardEle.dataset.currency = tranObj?.currency ?? BASE_CURRENCY;
         const sym =
@@ -605,12 +609,14 @@ async function editTran() {
       Number(editAmountEle.value),
       editCurrency,
     );
+    const oldTran = await localStorage.findTran(editCardEle.dataset.docid);
     const editFreqSel = document.getElementById("editFreq");
     const editFreqRow = document.getElementById("editFreqRow");
     const isRec = editTagEle.value?.startsWith("🔁");
     const newFreq = isRec && editFreqSel ? editFreqSel.value : null;
+
     const transObj = {
-      id: Number(editCardEle.id),
+      ...oldTran,
       amount: Math.round(baseAmount),
       originalAmount: Number(editAmountEle.value),
       currency: editCurrency,
@@ -618,7 +624,27 @@ async function editTran() {
         ? editTagEle.value.replace(/\s*\(.*\)$/, "") + ` (${newFreq})`
         : editTagEle.value,
     };
+
     await localStorage.saveTrans(transObj);
+
+    // If editing a recurring transaction, update the template too
+    if (transObj.tag?.startsWith("🔁")) {
+      const cleanTag = transObj.tag
+        .replace(/^🔁\s*/, "")
+        .replace(/\s*\(.*\)$/, "");
+
+      const rec = getAllRecurring().find(r => r.tag === cleanTag);
+
+    if (rec) {
+      rec.amount = Number(editAmountEle.value);
+
+      if (newFreq) {
+        rec.frequency = newFreq;
+     }
+
+      saveRecurring(rec);
+    }  
+  }
     const isRecurringFilter =
       transHistoryParentEle.dataset.filter === "recurring";
     const allTrans = await localStorage.getAllTrans();

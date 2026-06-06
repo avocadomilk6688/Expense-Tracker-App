@@ -211,7 +211,7 @@ export async function getAllTrans() {
 
     const transactionsList = [];
     querySnapshot.forEach((doc) => {
-      transactionsList.push({ id: doc.id, ...doc.data() });
+      transactionsList.push({ docId: doc.id, ...doc.data() });
     });
     return transactionsList;
   } catch (error) {
@@ -225,22 +225,41 @@ export async function getAllTrans() {
 
 export async function saveTrans(transObj) {
   if (!auth.currentUser) return null;
+
   try {
+    if (transObj.docId) {
+      await setDoc(
+        doc(
+          db,
+          "users",
+          auth.currentUser.uid,
+          "transactions",
+          transObj.docId
+        ),
+        transObj,
+        { merge: true }
+      );
+
+      return transObj.docId;
+    }
+
     const userTransCollection = collection(
       db,
       "users",
       auth.currentUser.uid,
-      "transactions",
+      "transactions"
     );
+
     const docRef = await addDoc(userTransCollection, transObj);
     return docRef.id;
   } catch (error) {
-    console.error("Error committing individual transaction entry:", error);
+    console.error(error);
     return null;
   }
 }
 
 export async function deleteTrans(firestoreId) {
+    console.log("deleteTrans received:", firestoreId, typeof firestoreId);
   if (!auth.currentUser) return;
   try {
     const docToDelRef = doc(
@@ -251,6 +270,8 @@ export async function deleteTrans(firestoreId) {
       firestoreId,
     );
     await deleteDoc(docToDelRef);
+      console.log("Deleted:", firestoreId);
+
   } catch (error) {
     console.error("Error processing user data deletion request:", error);
   }
@@ -323,11 +344,11 @@ export async function saveTag(tagString) {
   }
 }
 
-export async function findTran(targetId) {
+export async function findTran(targetDocId) {
   try {
     const all = await getAllTrans();
-    return all.find((item) => item.id == targetId) || null;
-  } catch (error) {
+    return all.find(item => item.docId === targetDocId) || null;
+  } catch {
     return null;
   }
 }

@@ -31,6 +31,7 @@ const colors = {
 };
 
 let totalExpData, totalBudgetLeftData;
+let expenseChart = null;
 let currentTab = "expense";
 
 // ─────────────────────────────────────────────────────────────
@@ -106,8 +107,6 @@ async function totalCalculate() {
 
   const budget = Number(localStorage.getTotalBudget());
   const leftBudget = budget - total;
-  totalExpData = total;
-  totalBudgetLeftData = leftBudget;
 
   // Convert to display currency
   const [dispTotal, dispBudget, dispLeft] = await Promise.all([
@@ -115,6 +114,9 @@ async function totalCalculate() {
     fromBaseINR(budget, displayCurrency),
     fromBaseINR(leftBudget, displayCurrency),
   ]);
+
+  totalExpData = dispTotal;
+  totalBudgetLeftData = dispLeft;
 
   totalExpEle.textContent = `${Math.round(dispTotal)}`;
   budgetLeftEle.textContent = `${Math.round(dispLeft)}`;
@@ -125,6 +127,11 @@ async function totalCalculate() {
     .querySelectorAll(".money-left-card h1, .total-card h4")
     .forEach((el) => {});
   swapCurrencySymbols(sym);
+
+  showChart([
+   totalExpData,
+   totalBudgetLeftData > 0 ? totalBudgetLeftData : 0,
+]);
 
   if (typeof updateCategoryProgressBars === "function")
     updateCategoryProgressBars();
@@ -404,7 +411,11 @@ function renderTransHistory(transArr = []) {
 // CHART
 // ─────────────────────────────────────────────────────────────
 function showChart(arr = []) {
-  new Chart(ctx, {
+   if (expenseChart) {
+    expenseChart.destroy();
+  }
+
+  expenseChart = new Chart(ctx, {
     type: "pie",
     data: {
       labels: ["Expence", "Buget Left"],
@@ -948,7 +959,7 @@ async function triggerDashboardBootstrap() {
   addTranBtnEvent();
 
   await totalCalculate();
-  showChart([totalExpData, totalBudgetLeftData >= 0 ? totalBudgetLeftData : 0]);
+  swapCurrencySymbols(sym);
 
   const fired = await processDue(localStorage.saveTrans.bind(localStorage));
   if (fired > 0) {
@@ -981,6 +992,13 @@ initAuthInterface();
 // Security Gateway State Monitor: Watches session tokens sequentially
 onAuthStateChanged(localStorage.auth, async (user) => {
   if (user) {
+
+    const userNameElement = document.getElementById("userName");
+
+  if (userNameElement && user.email) {
+    userNameElement.textContent = user.displayName || user.email.split("@")[0]
+  }
+
     // Secure Session Found: Lift overlay gates and populate user profile configs
     if (authScreenElement) authScreenElement.style.display = "none";
     if (globalLogoutTriggerBtn)

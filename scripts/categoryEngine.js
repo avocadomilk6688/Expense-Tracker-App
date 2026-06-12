@@ -61,7 +61,7 @@ export async function updateCategoryProgressBars() {
   const sym =
     SUPPORTED_CURRENCIES.find((c) => c.code === displayCurrency)?.symbol ?? "₹";
 
-  // 1. Fetch baseline formal tags from your teammate's tracker array, cleaned uniformly
+  // 1. Fetch baseline formal tags from tracker array, cleaned uniformly
   const formalTags = (
     getCategoryLimit
       ? await import("./firebaseStore.js").then((m) => m.getAllTags())
@@ -151,7 +151,7 @@ export async function updateCategoryProgressBars() {
       const baseValue = await toBaseINR(targetValue, displayCurrency);
       const currentLimitBase = Math.round(baseValue);
 
-      // CLOUD MIGRATION: Commits target value changes dynamically directly up to your Firestore cluster document nodes!
+      // CLOUD MIGRATION: Commits target value changes dynamically directly up to your Firestore cluster document nodes
       await setCategoryLimit(targetTag, currentLimitBase);
 
       if (currentLimitBase > 0) {

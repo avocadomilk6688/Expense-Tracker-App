@@ -75,7 +75,6 @@ export async function populateFilterDropdown() {
   const currentSelection = dropdown.value;
   dropdown.innerHTML = '<option value="all">All Categories</option>';
 
-  // FIXED: Await your fallback-protected cloud tag collection list
   const tags = (await getAllTags()) || [];
   tags.forEach((tag) => {
     const cleaned = cleanTag(tag);

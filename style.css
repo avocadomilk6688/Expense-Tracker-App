@@ -799,3 +799,135 @@ input[type="text"] {
     }
 
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ANALYTICS SECTION — Chart.js Data Visualization (Member C)
+   Software Evolution: Replaces the single legacy pie chart with
+   a full analytics dashboard showing category breakdown and
+   monthly spending trends.
+══════════════════════════════════════════════════════════════ */
+
+.analytics-section {
+    padding: 2% 2% 3%;
+    width: 100%;
+}
+
+.analytics-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.analytics-title i {
+    color: var(--blue);
+    font-size: 1.2rem;
+}
+
+/* ── Charts grid: two cards side by side ── */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* ── Individual chart card ── */
+.chart-card {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #e8e8e8;
+    padding: 20px 24px 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chart-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.chart-card-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #222;
+}
+
+.chart-subtitle {
+    font-size: 0.78rem;
+    color: #999;
+    font-weight: 400;
+}
+
+/* ── Chart canvas wrapper (controls height) ── */
+.chart-wrapper {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-wrapper--line {
+    height: 240px;
+}
+
+.chart-wrapper canvas {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* ── Empty state ── */
+.chart-empty-state {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+    color: #aaa;
+    height: 100%;
+    width: 100%;
+}
+
+.chart-empty-state i {
+    font-size: 2.5rem;
+    opacity: 0.35;
+}
+
+.chart-empty-state p {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #888;
+    margin: 0;
+}
+
+.chart-empty-state small {
+    font-size: 0.78rem;
+    color: #bbb;
+}
+
+/* ── Responsive: stack charts on smaller screens ── */
+@media screen and (max-width: 850px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-wrapper {
+        height: 220px;
+    }
+
+    .chart-wrapper--line {
+        height: 200px;
+    }
+
+    .analytics-title {
+        font-size: 1.2rem;
+    }
+}

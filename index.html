@@ -4,17 +4,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expence Traker</title>
-    <!-- css file link  -->
+
+    <!-- ── Page Metadata ── -->
+    <title>Expense Tracker</title>
+    <meta name="description" content="A cloud-synchronized personal expense tracker with multi-currency support, category budgets, recurring expenses, charts, and offline capability.">
+
+    <!-- ── PWA Manifest & Theme ── -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#d2dfff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Expense Tracker">
+    <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
+
+    <!-- ── CSS ── -->
     <link rel="stylesheet" href="./style.css">
 
-    <!-- fontawsome cdn  -->
+    <!-- ── Font Awesome ── -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
+    <!-- ══════════════════════════════════════════════════════════
+         AUTH SCREEN OVERLAY
+    ═══════════════════════════════════════════════════════════ -->
     <div id="authScreen"
         style="position: fixed; inset: 0; background: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; font-family: sans-serif; text-align: center; padding: 20px;">
 
@@ -140,6 +155,7 @@
         </div>
 
     </div>
+
     <!-- edit trans item form -->
     <div id="" class="edit-money-card">
         <div class="add-type">
@@ -150,8 +166,6 @@
         </div>
         <div class="edit-form-container">
             <div class="flex-col edit-amount">
-                <!--- <label for="editAmount">Amount</label>-->
-                <!-- ADD this line after the Amount label in the edit form -->
                 <label for="editAmount">Amount <span id="editCurrencyLabel"
                         style="font-size:0.85rem; color:#614a4a;"></span></label>
                 <input type="number" min="0" name="amount" id="editAmount">
@@ -175,7 +189,7 @@
         <button id="editTranBtn">Edit Expense <i class="fa-regular fa-pen-to-square"></i></button>
     </div>
 
-    <!-- mobie btn and greet user  -->
+    <!-- mobile btn and greet user -->
     <button class="mobile-add-btn"><i class="fa-solid fa-plus"></i></button>
     <div class="main">
         <div class="greeting">
@@ -196,16 +210,21 @@
             </button>
         </div>
     </div>
-        <!---------------------------- left section strats here  -------------------------->
+
+        <!-- ══════════════════════════════════════════════════════
+             MAIN CONTENT LAYOUT
+        ═══════════════════════════════════════════════════════ -->
         <div class="content-row">
+
+            <!-- ── LEFT PANEL ── -->
             <div class="left-container">
 
                 <div class="display-cards">
 
-                    <!-- money left card  -->
+                    <!-- Budget Left card (existing pie chart) -->
                     <div class="money-left-card">
                         <div class="card-text-container">
-                            <p>Buget Left</p>
+                            <p>Budget Left</p>
                             <h1>₹<span id="budgetLeft">0</span></h1>
                         </div>
                         <div class="chart-container">
@@ -213,8 +232,7 @@
                         </div>
                     </div>
 
-
-                    <!-- total money cards  -->
+                    <!-- Total amounts -->
                     <div class="budg-exp-container">
 
                         <div class="total-card total-budget">
@@ -235,10 +253,9 @@
                         </div>
                     </div>
 
-
                 </div>
-                <!-- add exp or budget card  -->
 
+                <!-- Add expense / budget card -->
                 <div class="add-money-card">
 
                     <div class="add-type">
@@ -257,13 +274,12 @@
                         <div class="flex-col add-amount">
                             <label for="addAmount">Amount</label>
                             <input type="number" min="0" name="amount" id="addAmount">
-                            </select>
                         </div>
 
                         <!-- Currency selector -->
                         <div class="flex-col select-currency">
                             <label for="currencySelect">Currency</label>
-                            <select id="currencySelect"></select> <!-- populated by initCurrencySelect() -->
+                            <select id="currencySelect"></select>
                         </div>
 
                         <div id="recurringRow" class="recurring-row">
@@ -308,15 +324,13 @@
                         <button id="clearBtn">Clear</button>
                     </div>
 
-
                 </div>
 
             </div>
-            <!------------------------------------ left section ends here  --------------------->
+            <!-- ── END LEFT PANEL ── -->
 
 
-
-
+            <!-- ── RIGHT PANEL ── -->
             <div class="right-container">
                 <div class="history-text">
                     <h1>History</h1>
@@ -337,6 +351,7 @@
                     </select>
                 </div>
 
+                <!-- Search & Filter Controls -->
                 <div class="filter-controls-wrapper"
                     style="background: #ffffff; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #aeaeae; display: flex; flex-direction: column; gap: 12px;">
 
@@ -386,15 +401,79 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Transaction history -->
                 <div class="money-history-container">
                 </div>
             </div>
+            <!-- ── END RIGHT PANEL ── -->
+
         </div>
 
+        <!-- ══════════════════════════════════════════════════════
+             ANALYTICS DASHBOARD — Chart.js Charts (Member C)
+        ═══════════════════════════════════════════════════════ -->
+        <section class="analytics-section" aria-label="Spending Analytics">
+            <h2 class="analytics-title">
+                <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+                Spending Analytics
+            </h2>
 
+            <div class="charts-grid">
 
-        <!-- chart.js cdn for pie card  -->
+                <!-- Category Breakdown Doughnut -->
+                <div class="chart-card" role="region" aria-label="Category spending breakdown">
+                    <div class="chart-card-header">
+                        <h3>Category Breakdown</h3>
+                        <span class="chart-subtitle">This month</span>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryDoughnutChart" aria-label="Doughnut chart showing spending by category this month" role="img"></canvas>
+                        <div id="categoryChartEmpty" class="chart-empty-state" style="display:none;">
+                            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+                            <p>No expenses this month yet.</p>
+                            <small>Add an expense to see your category breakdown.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Trend Line -->
+                <div class="chart-card" role="region" aria-label="Monthly spending trend over the last six months">
+                    <div class="chart-card-header">
+                        <h3>Monthly Trend</h3>
+                        <span class="chart-subtitle">Last 6 months</span>
+                    </div>
+                    <div class="chart-wrapper chart-wrapper--line">
+                        <canvas id="monthlyTrendChart" aria-label="Line chart showing total spending per month for the last six months" role="img"></canvas>
+                        <div id="trendChartEmpty" class="chart-empty-state" style="display:none;">
+                            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                            <p>No spending data yet.</p>
+                            <small>Your spending trend will appear here.</small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+        <!-- ── END ANALYTICS SECTION ── -->
+
+        <!-- chart.js cdn -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <!-- Service Worker Registration (PWA) -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then(reg => {
+                            console.log('[PWA] Service Worker registered. Scope:', reg.scope);
+                        })
+                        .catch(err => {
+                            console.warn('[PWA] Service Worker registration failed:', err.message);
+                        });
+                });
+            }
+        </script>
 
         <script src="./scripts/app.js" type="module"></script>
 

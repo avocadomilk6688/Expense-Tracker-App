@@ -1,7 +1,7 @@
 import * as localStorage from "./firebaseStore.js";
 import {
   toBaseINR,
-  fromBaseINR, 
+  fromBaseINR,
   SUPPORTED_CURRENCIES,
   BASE_CURRENCY,
   formatWithOriginal,
@@ -18,6 +18,7 @@ import {
   executeHistoryFilter,
   populateFilterDropdown,
 } from "./filterEngine.js";
+import { refreshAllCharts, destroyAllCharts } from "./chartEngine.js";
 
 // ─────────────────────────────────────────────────────────────
 // COLORS
@@ -533,6 +534,9 @@ async function addTransItem() {
   addTranBtnEvent();
   await totalCalculate();
 
+  // Refresh analytics charts with updated transaction data
+  await refreshAllCharts(localStorage.getDisplayCurrency());
+
   // Reset form
   amountEle.value = "";
   if (transNameEle) transNameEle.value = "";
@@ -573,6 +577,8 @@ function addTranBtnEvent() {
           renderTransHistory(updatedHistory);
           addTranBtnEvent();
           await totalCalculate();
+          // Refresh analytics charts after delete
+          await refreshAllCharts(localStorage.getDisplayCurrency());
         }
       },
     );
@@ -668,6 +674,8 @@ async function editTran() {
     }
     addTranBtnEvent();
     totalCalculate();
+    // Refresh analytics charts after edit
+    refreshAllCharts(localStorage.getDisplayCurrency());
     editAmountEle.value = "";
     editTagEle.value = "";
     hideInfo(editCardInfo);
@@ -689,19 +697,22 @@ const sortTransHelper = (arr = [], sortTypeNum) => {
   });
 };
 
-function sortTrans(e) {
+async function sortTrans(e) {
+  // BUG FIX (Maintenance): getAllTrans() is async — must be awaited
+  // before sorting, otherwise sort operates on a Promise object.
   const sortType = e.target.value;
+  const allTrans = await localStorage.getAllTrans();
   switch (sortType) {
     case "highToLow":
-      renderTransHistory(sortTransHelper(localStorage.getAllTrans(), 1));
+      renderTransHistory(sortTransHelper(allTrans, 1));
       addTranBtnEvent();
       break;
     case "lowToHigh":
-      renderTransHistory(sortTransHelper(localStorage.getAllTrans(), -1));
+      renderTransHistory(sortTransHelper(allTrans, -1));
       addTranBtnEvent();
       break;
     default:
-      renderTransHistory(localStorage.getAllTrans());
+      renderTransHistory(allTrans);
       addTranBtnEvent();
       break;
   }
@@ -882,6 +893,8 @@ async function triggerDashboardBootstrap() {
       renderTransHistory(allTrans);
       addTranBtnEvent();
       await totalCalculate();
+      // Refresh charts when user changes their display currency
+      await refreshAllCharts(displaySelect.value);
     });
   }
 
@@ -959,7 +972,16 @@ async function triggerDashboardBootstrap() {
   addTranBtnEvent();
 
   await totalCalculate();
-  swapCurrencySymbols(sym);
+
+  // BUG FIX (Maintenance): `sym` was referenced here but is only a local variable
+  // inside totalCalculate(). Resolved by re-deriving the symbol from displayCurrency.
+  const currentDisplayCurrency = localStorage.getDisplayCurrency();
+  const currentSym =
+    SUPPORTED_CURRENCIES.find((c) => c.code === currentDisplayCurrency)?.symbol ?? "₹";
+  swapCurrencySymbols(currentSym);
+
+  // Render analytics charts on initial dashboard load
+  await refreshAllCharts(currentDisplayCurrency);
 
   const fired = await processDue(localStorage.saveTrans.bind(localStorage));
   if (fired > 0) {
@@ -967,6 +989,7 @@ async function triggerDashboardBootstrap() {
     renderTransHistory(postDueTransactions);
     addTranBtnEvent();
     await totalCalculate();
+    await refreshAllCharts(currentDisplayCurrency);
   }
 }
 
@@ -1020,5 +1043,8 @@ onAuthStateChanged(localStorage.auth, async (user) => {
     // Reset data fields to zero state preventing local data leakage
     renderTransHistory([]);
     if (tagContainer) tagContainer.innerHTML = "";
+
+    // Destroy chart instances to prevent stale data from showing on next login
+    destroyAllCharts();
   }
 });

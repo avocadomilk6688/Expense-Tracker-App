@@ -1,109 +1,261 @@
-## Expense Tracker App 📊💰
+# Expense Tracker App 📊💰
 
-📝 Manage your finances efficiently with this Expense Tracker App! Track your expenses, set budgets, and visualize your spending habits to stay on top of your financial goals. Built with HTML, CSS, JavaScript, and integrated with local storage for seamless user experience.
+> **CSE6364 Software Evolution & Maintenance** — Enhanced open-source expense tracker with cloud synchronization, multi-currency support, analytics, and Progressive Web App capabilities.
 
+---
 
 ## Table of Contents
 
-- [Preview](#preview)
-- [Demo](#demo)
-- [Features](#features)  <!-- Add Features Section -->
+- [Overview](#overview)
+- [Features](#features)
+- [Enhancement Summary](#enhancement-summary)
 - [Technologies Used](#technologies-used)
-- [Usage](#usage)
+- [Installation](#installation)
+- [Usage Guide](#usage-guide)
+- [Testing](#testing)
+- [Screenshots](#screenshots)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [License](#license)
 - [Acknowledgments](#acknowledgments)
-- [Contact](#contact)
 
 ---
 
-## Preview
+## Overview
 
-### Desktop Preview
-<img src="./Assets/exp-tracker-destop-preview.png" alt="">
+This project is an evolution of the original open-source [Expense Tracker App](https://github.com/avocadomilk6688/Expense-Tracker-App) by Manik Maity.
 
-### Mobile Preview
-<img height="600px" src="./Assets/exp-tracker-mobile.png" alt="">
-
----
-
-
-
-## Demo
-
-[Link to Live Demo](https://expense-tracker-manik.netlify.app/)
-
-You can see the project in action by visiting the [live demo](https://expense-tracker-manik.netlify.app/).
+The original application stored data in browser `localStorage`, provided a single basic pie chart, and had no user accounts. Through a structured software maintenance and evolution process, the team has transformed it into a secure, cloud-synchronized, multi-currency, analytics-rich **Progressive Web App** with comprehensive testing and documentation.
 
 ---
 
 ## Features
 
-Here are some key features of this app:
+### Original Features
+- 💰 Budget input and editing
+- 📊 Expense addition with custom tags
+- 📜 Expense history display and sorting
+- ✏️ Edit and delete expense entries
+- 📈 Basic pie chart visualization
 
-- 💼 Expense addition with customizable exp tags
-- 💰 Budget input and budget editing 
-- 📊 Local storage integration for budget, expenses, and tags
-- 📜 Expense history display
-- ✏️ Edit and delete functionalities for expense items
-- 🔍 Expense history sorting options
-- 📈 Budget left calculation and visualization via pie chart
-- ❌ error handling
-- 🖥️ Responsive design for seamless user experience
+### Team Enhancements
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 1 | 🔐 **Firebase Authentication** | Secure email/password + Google OAuth login with cloud data isolation |
+| 2 | 📋 **Category Budget Limits** | Per-category spending limits with real-time progress bars (turns red at 85%) |
+| 3 | 🔍 **Search & Filter** | Keyword search, category filter, price range, and date range filtering |
+| 4 | 💱 **Multi-Currency Support** | 11 currencies, live exchange rates via frankfurter.app, INR base conversion |
+| 5 | 🔁 **Recurring Expenses** | Daily/weekly/monthly recurring templates with auto-trigger on app load |
+| 6 | 📈 **Chart.js Data Visualization** | Category breakdown doughnut chart + 6-month spending trend line chart |
+| 7 | 📱 **Progressive Web App (PWA)** | Installable, offline-capable app shell with service worker caching |
+
+---
+
+## Enhancement Summary
+
+### Chart.js Data Visualization (Member C)
+
+**Original limitation:** A single pie chart displayed only "Total Expense vs. Budget Remaining" — providing no insight into spending patterns.
+
+**Enhancement:** A dedicated `chartEngine.js` module delivers:
+- **Category Breakdown Doughnut Chart** — displays current month spending distributed by category, with color-coded segments, legend, and tooltips
+- **Monthly Spending Trend Line Chart** — visualizes total spending over the last 6 months with a smooth curve, labeled axes, and currency-aware formatting
+- **Dynamic updates** — both charts refresh automatically when transactions are added, edited, or deleted
+- **Empty-state handling** — friendly messages display when no data exists
+- **Responsive design** — stacks to single column on mobile screens
+- **Accessibility** — ARIA labels on canvases and high-contrast color palette
+
+### Progressive Web App (PWA) (Member C)
+
+**Original limitation:** The app required a constant internet connection to load. Users could not install it or access any content offline.
+
+**Enhancement:**
+- **`manifest.json`** — enables browser install prompt with standalone window mode, custom icons, and app metadata
+- **`sw.js`** — Service Worker implementing:
+  - *Cache-First* strategy for the application shell (HTML, CSS, JS, icons)
+  - *Network-First* strategy for external services (Firebase, FX API)
+  - *Offline fallback* — the app UI loads from cache even without connectivity
+  - *Versioned cache management* — stale caches are cleaned on SW activation
 
 ---
 
 ## Technologies Used
 
-- HTML
-- CSS
-- JavaScript
-- ChartJs
+| Technology | Purpose |
+|------------|---------|
+| HTML5 / CSS3 / JavaScript (ES Modules) | Core application |
+| Firebase Authentication | User login (email/password + Google OAuth) |
+| Cloud Firestore | Cloud data persistence (transactions, tags, settings) |
+| Chart.js | Data visualization (doughnut + line charts) |
+| frankfurter.app API | Live foreign exchange rates |
+| Service Worker API | PWA offline caching |
+| Web App Manifest | PWA installability |
+| Jest | Unit testing framework |
+| Babel | ES module transpilation for Jest |
+| Cypress | End-to-end integration testing |
 
 ---
 
-## Usage
+## Installation
 
+See [docs/INSTALLATION.md](docs/INSTALLATION.md) for the full setup guide.
 
-### Installation
-1. Clone the repository to your local machine using `git clone`.
-2. Navigate to the project directory.
+**Quick start:**
+```bash
+# 1. Clone or download the repository
+git clone https://github.com/your-repo/Expense-Tracker-App.git
+cd Expense-Tracker-App
 
-### Running the App
-1. Go to `Expense-Tracker-App` folder by typing `cd Expense-Tracker-App` in terminal and type `live-server` in terminal to open Expense Tracker App in browser.
+# 2. Install dev dependencies
+npm install
 
-### Adding budget
-- **Desktop:** Go to the "Change Budget" section and input your preferred budget amount in the designated field. Click on the "Add" button.
-- **Mobile:** Tap on the plus (+) icon and input your budget amount in the provided field. Tap "Add".
+# 3. Serve the app (requires a local HTTP server for ES modules + SW)
+npx live-server --port=8080
+# or: npx http-server -p 8080
 
-### Adding Expenses
-- To add expenses, go to the "Add Expense".
-- Input the expense amount and select a expense tag. You can also create a custom tag by clicking on "Add tag" button.
-- Clear all input fields by clicking on the "Clear" button.
+# 4. Open http://127.0.0.1:8080 in Chrome
+```
 
-### Viewing Expense History
-- Go to `History` Scroll down to view your expense history.
-- Sort the expense history by clicking on the dropdown to arrange transactions from high to low or low to high.
+> **Important:** The app must be served over HTTP (not opened as a file) for Firebase, ES modules, and the Service Worker to function correctly.
 
-### Editing and Deleting Expenses
-- In the expense history, each transaction is accompanied by edit and delete icons.
-- Click on the edit icon to modify transaction details. A popup will appear where you can edit the amount, tag, or both. Click "Edit Expense" to save changes.
-- To delete a transaction, click on the trash icon associated with the transaction and confirm.
+---
 
-### Mobile Screen
-- The web app is designed to be responsive and mobile-friendly.
-- You can toggle the "Add Expense" and "Change Budget" modal by tapping on the plus icon.
+## Usage Guide
+
+See [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for the complete user guide.
+
+### Quick Reference
+
+| Action | How |
+|--------|-----|
+| Sign in | Email/password or Google OAuth |
+| Add expense | "Add Expense" tab → fill name, amount, currency, select tag → Add |
+| Set budget | "Change Budget" tab → enter amount → Save |
+| Set category limit | "Category Limit" tab → enter limit next to each tag |
+| View analytics | Scroll down to "Spending Analytics" section |
+| Install the app | Click install icon in browser address bar |
+
+---
+
+## Testing
+
+See [docs/TESTING.md](docs/TESTING.md) for the full testing documentation.
+
+```bash
+# Run all unit tests
+npm test
+
+# Run unit tests with verbose output
+npm test -- --verbose
+
+# Run a specific test file
+npm test -- --testPathPattern=chartEngine
+
+# Run Cypress integration tests (requires app running on port 8080)
+npx cypress run
+
+# Open Cypress interactive mode
+npx cypress open
+```
+
+### Test Coverage
+
+| Area | Framework | Tests |
+|------|-----------|-------|
+| Chart data aggregation | Jest | 11 tests |
+| Currency conversion | Jest | 3 tests |
+| Filter engine | Jest | 5 tests |
+| Category engine | Jest | 8 tests |
+| Recurring engine | Jest | 2 tests |
+| isDue logic | Jest | 2 tests |
+| Auth & UI (E2E) | Cypress | 3 tests |
+| Chart rendering (E2E) | Cypress | 7 tests |
+| PWA validation (E2E) | Cypress | 8 tests |
+| Currency (E2E) | Cypress | 1 test |
+| Recurring (E2E) | Cypress | 1 test |
+| Transactions (E2E) | Cypress | 1 test |
+
+---
+
+## Screenshots
+
+| Desktop Dashboard | Mobile View |
+|---|---|
+| ![Desktop](./Assets/exp-tracker-destop-preview.png) | ![Mobile](./Assets/exp-tracker-mobile.png) |
+
+> Additional screenshots (Charts, PWA install, offline mode) — see [docs/screenshots/](docs/screenshots/).
+
+---
+
+## Project Structure
+
+```
+Expense-Tracker-App/
+├── index.html                  # Single-page application shell
+├── style.css                   # Global styles + chart section styles
+├── manifest.json               # PWA Web App Manifest
+├── sw.js                       # Service Worker (cache strategies)
+├── firebaseConfig.js           # Firebase project credentials
+├── scripts/
+│   ├── app.js                  # Main application controller
+│   ├── authController.js       # Authentication UI logic
+│   ├── firebaseStore.js        # Firebase data layer (Auth + Firestore)
+│   ├── chartEngine.js          # Chart.js visualization module (NEW)
+│   ├── categoryEngine.js       # Category budget limits
+│   ├── currencyService.js      # Multi-currency conversion + FX rates
+│   ├── filterEngine.js         # Transaction search & filter
+│   ├── recurringEngine.js      # Recurring expense templates
+│   └── localStorage.js         # Legacy localStorage module (unused)
+├── tests/
+│   ├── chartEngine.test.js     # Chart data aggregation unit tests (NEW)
+│   ├── categoryEngine.test.js  # Category logic unit tests
+│   ├── currencyService.test.js # Currency conversion unit tests
+│   ├── filterEngine.test.js    # Filter logic unit tests
+│   ├── isDue.test.js           # Recurring due-date logic tests
+│   └── recurringEngine.test.js # Recurring CRUD unit tests
+├── cypress/
+│   └── e2e/
+│       ├── auth.cy.js          # Auth + UI integration tests
+│       ├── charts.cy.js        # Chart rendering integration tests (NEW)
+│       ├── currency.cy.js      # Currency feature tests
+│       ├── pwa.cy.js           # PWA validation tests (NEW)
+│       ├── recurring.cy.js     # Recurring expense tests
+│       └── transaction.cy.js   # Transaction flow tests
+├── icons/                      # PWA icons (192x192, 512x512) (NEW)
+├── docs/
+│   ├── INSTALLATION.md
+│   ├── USER_GUIDE.md
+│   ├── TESTING.md
+│   └── screenshots/
+│       ├── PWA_SCREENSHOT_CHECKLIST.md
+│       └── CHARTS_SCREENSHOT_CHECKLIST.md
+├── Assets/                     # Preview images
+├── Report/                     # Course assignment documents
+├── package.json
+└── babel.config.json
+```
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+## License
+
+This project is licensed under the MIT License — see [LICENSE](LICENSE).
+
+Original project by [Manik Maity](https://github.com/avocadomilk6688).
 
 ---
 
 ## Acknowledgments
 
-This project wouldn't be possible without the following:
-
-[Chart Js](https://www.chartjs.org/)
-
----
-
-## Contact
-
-- Manik Maity -[manikmaity010@gmail.com]
-- [My LinkedIn](https://www.linkedin.com/in/manikmaity/)
-
+- [Chart.js](https://www.chartjs.org/) — Data visualization library
+- [Firebase](https://firebase.google.com/) — Authentication and Firestore
+- [frankfurter.app](https://www.frankfurter.app/) — Free foreign exchange rates API
+- [Font Awesome](https://fontawesome.com/) — Icons
+- [Manik Maity](https://github.com/avocadomilk6688) — Original project author

@@ -1,44 +1,33 @@
 // ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
+// Custom Cypress commands for the Expense Tracker App.
 //
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
+// The `login` command navigates to the app, authenticates
+// via Firebase email/password, and waits for the dashboard
+// to become visible before returning control to the test.
+//
+// IMPORTANT: Uses baseUrl from cypress.config.js — no
+// hardcoded port numbers.
 // ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
 
 Cypress.Commands.add("login", () => {
+  // Use "/" so Cypress resolves against the configured baseUrl
+  cy.visit("/");
 
-  cy.visit("http://localhost:5500");
+  cy.wait(500);
 
-  cy.get("#authEmail")
-    .type("abc@gmail.com"); // Change to your test account email
+  cy.get("#authScreen").then(($screen) => {
+    if ($screen.is(":visible")) {
+      cy.get("#authEmail").clear().type("maggie@gmail.com");
 
-  cy.get("#authPassword")
-    .type("123456"); // Change to your test account password
+      cy.get("#authPassword").then(($pass) => {
+        if ($pass.is(":visible") && !$pass.is(":disabled")) {
+          cy.wrap($pass).clear().type("password123");
+          cy.get("#emailAuthSubmitBtn").click();
+        }
+      });
+    }
+  });
 
-  cy.get("#emailAuthSubmitBtn")
-    .click();
-
-  cy.get("#currencySelect", {
-    timeout: 20000
-  }).should("be.visible");
-
+  // Wait for the auth screen to dismiss (dashboard visible)
+  cy.get("#authScreen", { timeout: 20000 }).should("not.be.visible");
 });
-
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })

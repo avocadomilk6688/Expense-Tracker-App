@@ -159,6 +159,7 @@ To maintain rigorous compliance across the codebase evolution, system documentat
 2. [`CHANGELOG.md`](./CHANGELOG.md) - Chronological iteration journal recording perfective software modifications, branch versions, bug fixes, and refactoring history.
 3. [`CONTRIBUTING.md`](./CONTRIBUTING.md) - Standard development guidelines, code formatting metrics, and branching policies for open-source contributors.
 4. [`LICENSE`](./LICENSE) - Formal governance parameters outlining software reuse rights and legal asset compliance.
+5. [`TESTING.md`](./TESTING.md) - Test strategy, run instructions, coverage map, and conventions for Jest and Cypress.
 
 ---
 

@@ -42,3 +42,5 @@ test(pwa): add service worker cypress tests
 All new features must include:
 - Unit tests (Jest) for business logic
 - Integration tests (Cypress) for UI behavior
+
+See [TESTING.md](./TESTING.md) for full run instructions, coverage map, and writing guidelines.

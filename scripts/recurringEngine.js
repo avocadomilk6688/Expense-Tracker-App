@@ -52,7 +52,7 @@ export function isDue(rec) {
 
 /**
  * Checks all recurring templates, creates transactions for overdue ones.
- * @param {Function} saveTransFn  — your localStorage.saveTrans function
+ * @param {Function} saveTransFn  — localStorage.saveTrans function
  * @returns {number}              — count of transactions auto-created
  */
 export async function processDue(saveTransFn) {

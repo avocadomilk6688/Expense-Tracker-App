@@ -7,7 +7,7 @@ import {
 } from "./firebaseStore.js";
 
 /**
- * Helper function to normalize tag names by stripping out your teammate's
+ * Helper function to normalize tag names by stripping out
  * recurring emoji prefix and trailing frequency markers (e.g., "🔁 Food (monthly)" -> "Food")
  */
 function normalizeTagName(tagStr) {
@@ -151,7 +151,7 @@ export async function updateCategoryProgressBars() {
       const baseValue = await toBaseINR(targetValue, displayCurrency);
       const currentLimitBase = Math.round(baseValue);
 
-      // CLOUD MIGRATION: Commits target value changes dynamically directly up to your Firestore cluster document nodes
+      // CLOUD MIGRATION: Commits target value changes dynamically directly up to Firestore cluster document nodes
       await setCategoryLimit(targetTag, currentLimitBase);
 
       if (currentLimitBase > 0) {

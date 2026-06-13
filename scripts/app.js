@@ -192,7 +192,7 @@ const showBudgetInput = () => {
   const nameDiv = document.querySelector(".add-name");
   if (nameDiv) nameDiv.style.display = "none";
 
-  // Explicitly restore visibility of your clean input targets
+  // Explicitly restore visibility of clean input targets
   const amountDiv = document.querySelector(".add-amount");
   if (amountDiv) amountDiv.style.display = "";
   const currencyDiv = document.querySelector(".select-currency");
@@ -271,7 +271,7 @@ const showCategoryProgressInputTab = () => {
     catBtn.style.backgroundColor = "#8b8dff";
   }
 
-  // Explicitly hide your clean targets here
+  // Explicitly hide clean targets here
   const amountDiv = document.querySelector(".add-amount");
   if (amountDiv) amountDiv.style.display = "none";
   const currencyDiv = document.querySelector(".select-currency");
@@ -285,7 +285,7 @@ const showCategoryProgressInputTab = () => {
   const actionButtons = document.querySelector(".add-money-card-btn");
   if (actionButtons) actionButtons.style.display = "none";
 
-  // Exclusively reveal your custom dashboard block containing the limits tracking bars
+  // Exclusively reveal custom dashboard block containing the limits tracking bars
   if (document.getElementById("categoryBudgetsContainerBlock"))
     document.getElementById("categoryBudgetsContainerBlock").style.display =
       "block";

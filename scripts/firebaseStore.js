@@ -292,7 +292,7 @@ export async function getAllTags() {
     );
     const querySnapshot = await getDocs(userTagsCollection);
 
-    // 1. Establish your 12 baseline project expense presets that MUST always be present
+    // 1. Establish 12 baseline project expense presets that MUST always be present
     const finalTagsList = [
       "Miscellaneous 🌀",
       "Education & Books 📚",

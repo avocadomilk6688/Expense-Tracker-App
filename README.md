@@ -151,6 +151,17 @@ Here are some key features of this app:
 
 ---
 
+## Project Documentation Tree
+
+To maintain rigorous compliance across the codebase evolution, system documentation has been modularized away from a single dense file into dedicated targets:
+
+1. [`README.md`](./README.md) - Rapid user onboarding, environment configuration, setup steps, and project architecture overview.
+2. [`CHANGELOG.md`](./CHANGELOG.md) - Chronological iteration journal recording perfective software modifications, branch versions, bug fixes, and refactoring history.
+3. [`CONTRIBUTING.md`](./CONTRIBUTING.md) - Standard development guidelines, code formatting metrics, and branching policies for open-source contributors.
+4. [`LICENSE`](./LICENSE) - Formal governance parameters outlining software reuse rights and legal asset compliance.
+
+---
+
 ## Acknowledgments
 
 This project wouldn't be possible without the following:

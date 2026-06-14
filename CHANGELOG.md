@@ -14,7 +14,7 @@
 - Added Progressive Web App support, including manifest, service worker, and app icons.
 - Added Cypress end-to-end tests for authentication, currency, recurring expenses, transactions, charts, and PWA behavior.
 - Added Jest unit tests for category logic, filters, currency service, recurring schedules, and chart engine.
-- Added project documentation files including `CONTRIBUTING.md`, `LICENSE`, and changelog content.
+- Added project documentation files including `TESTING.md`, `CONTRIBUTING.md`, `LICENSE`, and changelog content.
 
 ### Changed
 - Updated README content and preview assets.

@@ -156,22 +156,6 @@ Defined in [cypress/support/commands.js](./cypress/support/commands.js):
 
 Prefer `cy.login()` over duplicating auth boilerplate in new specs. Some existing specs still inline the login flow — new tests should use the command.
 
-## Coverage Gaps
-
-The following modules and features do **not** have automated test coverage:
-
-| Area | Notes |
-|------|-------|
-| [scripts/app.js](./scripts/app.js) | Main UI orchestration (~1050 lines) |
-| [scripts/firebaseStore.js](./scripts/firebaseStore.js) | Auth and Firestore CRUD |
-| [scripts/authController.js](./scripts/authController.js) | Login/register UI flow |
-| `getRates()` in currencyService | Rate fetching and caching |
-| `processDue()` in recurringEngine | Automatic recurring transaction processing |
-| Edit/delete transactions | Minimal E2E coverage |
-| Google OAuth | No test coverage |
-| Service worker caching | Only registration is tested, not cache behavior |
-| Chart rendering with live data | Cypress validates DOM structure only; populated charts require manual verification |
-
 ## Writing New Tests
 
 All new features must include both a Jest unit test and a Cypress spec. See [CONTRIBUTING.md](./CONTRIBUTING.md).
